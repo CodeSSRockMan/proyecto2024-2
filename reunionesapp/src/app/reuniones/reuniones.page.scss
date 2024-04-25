@@ -1,0 +1,36 @@
+// Fondo verde claro
+ion-content {
+    --ion-background-color: #e5ffea !important; /* Color verde claro */
+}
+
+// Color de texto azul
+ion-label, ion-input, ion-textarea, ion-button {
+    color: #007bff !important; /* Color azul */
+}
+
+// Fondo blanco para los campos de entrada
+ion-input, ion-textarea {
+    --ion-background-color: #ffffff !important; /* Fondo blanco */
+}
+
+// Espacio entre los elementos
+ion-item {
+    margin-bottom: 20px;
+}
+
+// Estilo para el botón de agregar fechas tentativas
+ion-button {
+    --background: #007bff !important; /* Color de fondo azul para el botón */
+    --color: #ffffff !important; /* Color de texto blanco */
+    font-weight: bold; /* Añade negrita al texto del botón */
+    font-size: 16px; /* Tamaño de fuente personalizado */
+    padding: 10px 20px; /* Ajusta el espacio dentro del botón */
+}
+
+// Estilo para el botón de guardar
+ion-button[type="submit"] {
+    --background: #007bff !important; /* Color de fondo azul para el botón */
+    --color: #ffffff !important; /* Color de texto blanco */
+    font-size: 14px; /* Tamaño de fuente personalizado */
+    padding: 8px 16px; /* Ajusta el espacio dentro del botón */
+}

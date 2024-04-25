@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear Reunión</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label position="floating">Nombre de la Reunión</ion-label>
+    <ion-input [(ngModel)]="meetingName"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Ubicación</ion-label>
+    <ion-select [(ngModel)]="location">
+      <ion-select-option value="presencial">Presencial</ion-select-option>
+      <ion-select-option value="digital">Digital</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item *ngIf="location === 'presencial'">
+    <ion-label position="floating">Ubicación</ion-label>
+    <ion-input [(ngModel)]="physicalLocation"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Motivo</ion-label>
+    <ion-input [(ngModel)]="reason"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Comentarios</ion-label>
+    <ion-textarea [(ngModel)]="comments"></ion-textarea>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Fecha Tentativa</ion-label>
+    <ion-button (click)="addTentativeDate()">Agregar</ion-button>
+  </ion-item>
+
+  <!-- Aquí puedes mostrar las fechas tentativas agregadas -->
+
+  <ion-button expand="block" (click)="saveMeeting()">Guardar</ion-button>
+</ion-content>
+
