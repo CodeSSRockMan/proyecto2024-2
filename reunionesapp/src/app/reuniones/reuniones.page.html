@@ -1,45 +1,120 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title>Crear Reunión</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-item>
-    <ion-label position="floating">Nombre de la Reunión</ion-label>
-    <ion-input [(ngModel)]="meetingName"></ion-input>
-  </ion-item>
+<ion-content [fullscreen]="true">
+  <swiper-container>
+    <swiper-slide>
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Datos de la Reunión</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="floating">Nombre de la Reunión</ion-label>
+            <ion-input [(ngModel)]="meetingName"></ion-input>
+          </ion-item>
 
-  <ion-item>
-    <ion-label>Ubicación</ion-label>
-    <ion-select [(ngModel)]="location">
-      <ion-select-option value="presencial">Presencial</ion-select-option>
-      <ion-select-option value="digital">Digital</ion-select-option>
-    </ion-select>
-  </ion-item>
+          <ion-item>
+            <ion-label position="floating">Ubicación</ion-label>
+            <ion-input [(ngModel)]="locationName"></ion-input>
+            <ion-select [(ngModel)]="locationType">
+              <ion-select-option value="presencial">Presencial</ion-select-option>
+              <ion-select-option value="digital">Digital</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-  <ion-item *ngIf="location === 'presencial'">
-    <ion-label position="floating">Ubicación</ion-label>
-    <ion-input [(ngModel)]="physicalLocation"></ion-input>
-  </ion-item>
+          <ion-item *ngIf="locationType === 'presencial'">
+            <ion-label position="floating">Dirección</ion-label>
+            <ion-input [(ngModel)]="physicalLocation"></ion-input>
+          </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Motivo</ion-label>
-    <ion-input [(ngModel)]="reason"></ion-input>
-  </ion-item>
+          <ion-item>
+            <ion-label position="floating">Motivo</ion-label>
+            <ion-input [(ngModel)]="reason"></ion-input>
+          </ion-item>
 
-  <ion-item>
-    <ion-label position="floating">Comentarios</ion-label>
-    <ion-textarea [(ngModel)]="comments"></ion-textarea>
-  </ion-item>
+          <ion-item>
+            <ion-label position="floating">Comentarios</ion-label>
+            <ion-textarea [(ngModel)]="comments"></ion-textarea>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </swiper-slide>
 
-  <ion-item>
-    <ion-label>Fecha Tentativa</ion-label>
-    <ion-button (click)="addTentativeDate()">Agregar</ion-button>
-  </ion-item>
+    <swiper-slide>
+      <ion-card>
+        <ion-card-content>
+          <!-- Selección de fecha -->
+          <ion-item style="margin-bottom: 10;">
+            <ion-datetime presentation="date" locale="es-ES" display-format="DD/MM/YYYY" [(ngModel)]="selectedDate" [min]="minDate" 
+            [value]="selectedDate">
 
-  <!-- Aquí puedes mostrar las fechas tentativas agregadas -->
+          
+            <span slot="title">Seleccione la Fecha y Hora</span>
+          </ion-datetime>
+          <script>
+            const datetime = document.querySelector('ion-datetime');
+            datetime.formatOptions = {
+              time: { hour: '2-digit', minute: '2-digit' },
+              date: { day: '2-digit', month: 'long' },
+            };
+          </script>
+          </ion-item>
 
-  <ion-button expand="block" (click)="saveMeeting()">Guardar</ion-button>
+          <ion-item style="margin-bottom: 10;">
+            <ion-label>Hora de Inicio</ion-label>
+            <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="HH:mm" picker-format="HH:mm" [(ngModel)]="selectedStartTime" style="font-size: small;"></ion-datetime>
+          </ion-item>
+          
+          <ion-item style="margin-bottom: 10;">
+            <ion-label>Hora de Fin</ion-label>
+            <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="HH:mm" picker-format="HH:mm" [(ngModel)]="selectedEndTime" style="font-size: small;"></ion-datetime>
+          </ion-item>
+
+
+
+
+          <!-- Botón para añadir la fecha -->
+          <ion-button expand="block" (click)="addMeetingDate()" class="custom-button">Añadir</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </swiper-slide>
+
+    <swiper-slide>
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Fechas Añadidas</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-card *ngFor="let row of meetingDates; let i = index">
+            <ion-card-header>
+                <ion-card-title>{{ row[0].toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-item>
+                    <ion-label>Hora de Inicio:</ion-label>
+                    <ion-text>{{ row[1].toLocaleTimeString('es-ES') }}</ion-text>
+                </ion-item>
+                <ion-item>
+                    <ion-label>Hora de Fin:</ion-label>
+                    <ion-text>{{ row[2].toLocaleTimeString('es-ES') }}</ion-text>
+                </ion-item>
+                <ion-button slot="end" fill="clear" color="danger" (click)="removeMeetingDate(i)">Eliminar</ion-button>
+            </ion-card-content>
+        </ion-card>
+        <ion-item *ngIf="meetingDates.length === 0">
+            <p class="ion-text-center">No hay fechas seleccionadas.</p>
+        </ion-item>
+      </ion-card-content>
+      
+        
+      </ion-card>
+    </swiper-slide>
+  </swiper-container>
 </ion-content>
-

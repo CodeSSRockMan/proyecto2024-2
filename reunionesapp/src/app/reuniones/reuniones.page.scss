@@ -4,9 +4,16 @@ ion-content {
 }
 
 // Color de texto azul
-ion-label, ion-input, ion-textarea, ion-button {
+ion-label, ion-input, ion-textarea {
     color: #007bff !important; /* Color azul */
 }
+
+.swiper-slide {
+    height: auto !important;
+  }
+
+
+  
 
 // Fondo blanco para los campos de entrada
 ion-input, ion-textarea {
@@ -17,6 +24,10 @@ ion-input, ion-textarea {
 ion-item {
     margin-bottom: 20px;
 }
+
+.custom-button {
+    color: #ffffff; /* Color de texto blanco */
+  }
 
 // Estilo para el botón de agregar fechas tentativas
 ion-button {
@@ -34,3 +45,11 @@ ion-button[type="submit"] {
     font-size: 14px; /* Tamaño de fuente personalizado */
     padding: 8px 16px; /* Ajusta el espacio dentro del botón */
 }
+
+.custom-datetime {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  
