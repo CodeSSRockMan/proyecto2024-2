@@ -14,6 +14,14 @@ const routes: Routes = [
   {
     path: 'reuniones',
     loadChildren: () => import('./reuniones/reuniones.module').then( m => m.ReunionesPageModule)
+  },
+  {
+    path: 'reuniones-lista',
+    loadChildren: () => import('./reuniones-lista/reuniones-lista.module').then( m => m.ReunionesListaPageModule)
+  },
+  {
+    path: 'grupos',
+    loadChildren: () => import('./grupos/grupos.module').then( m => m.GruposPageModule)
   }
 ];
 
