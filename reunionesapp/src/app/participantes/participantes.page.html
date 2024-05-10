@@ -1,0 +1,26 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Participantes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Participantes</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container mt-3">
+    <div *ngFor="let participante of participantes" class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Nombre: {{ participante.nombre }}</h5>
+        <p class="card-text">Teléfono: {{ participante.telefono }}</p>
+        <button (click)="llamar(participante.telefono)" class="btn btn-primary mr-2">Llamar</button>
+        <button (click)="enviarWhatsapp(participante.telefono)" class="btn btn-success">WhatsApp</button>
+      </div>
+    </div>
+  </div>
+</ion-content>

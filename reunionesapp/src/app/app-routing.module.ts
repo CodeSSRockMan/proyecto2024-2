@@ -22,6 +22,18 @@ const routes: Routes = [
   {
     path: 'grupos',
     loadChildren: () => import('./grupos/grupos.module').then( m => m.GruposPageModule)
+  },
+  {
+    path: 'reuniones-agregar-participante',
+    loadChildren: () => import('./reuniones-agregar-participante/reuniones-agregar-participante.module').then( m => m.ReunionesAgregarParticipantePageModule)
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)
+  },
+  {
+    path: 'participantes',
+    loadChildren: () => import('./participantes/participantes.module').then( m => m.ParticipantesPageModule)
   }
 ];
 
