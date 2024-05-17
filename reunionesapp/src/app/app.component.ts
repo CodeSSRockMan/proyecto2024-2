@@ -10,6 +10,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 })
 export class AppComponent {
   public appPages = [
+    { title: 'Login', url: '/login', icon: 'home' },
     { title: 'Home', url: '/home', icon: 'home' },
     { title: 'Crear reunión', url: '/reuniones', icon: 'mail' },
     { title: 'Mis grupos', url: '/grupos', icon: 'grid' },

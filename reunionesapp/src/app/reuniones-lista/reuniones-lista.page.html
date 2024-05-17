@@ -1,13 +1,31 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Mis reuniones</ion-title>
+    <ion-title>Mis Reuniones</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Mis reuniones</ion-title>
+      <ion-title size="large">Reuniones</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <!-- Barra de búsqueda -->
+  <ion-searchbar (ionChange)="buscarReuniones($event)" placeholder="Buscar reuniones"></ion-searchbar>
+
+  <div class="container mt-3">
+    <div *ngFor="let reunion of reunionesFiltradas" class="card mb-3" (click)="verDetalles(reunion)">
+      <div class="card-body">
+        <h5 class="card-title">{{ reunion.motivo }}</h5>
+        <p class="card-text">{{ reunion.comentarios }}</p>
+        <p class="card-text">Estado: {{ reunion.estado }}</p>
+        <p class="card-text" *ngIf="reunion.fecha">Fecha: {{ reunion.fecha }}</p>
+        <div class="scrollable-content">
+          <h6>Participantes:</h6>
+          <div *ngFor="let participante of reunion.participantes">{{ participante.nombre }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>

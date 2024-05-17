@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { HomePageRoutingModule } from './home-routing.module';
+import { DatePickerComponent } from '../date-picker/date-picker.component'; // Importa el componente
 
 import { HomePage } from './home.page';
 
@@ -16,7 +17,7 @@ import { HomePage } from './home.page';
     HomePageRoutingModule,
     FullCalendarModule,
   ],
-  declarations: [HomePage],
+  declarations: [HomePage,DatePickerComponent],
   schemas: []
 })
 export class HomePageModule {}

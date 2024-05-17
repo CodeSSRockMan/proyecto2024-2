@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { CalendarComponent } from '../calendar/calendar.component';
 
 
 @Component({
@@ -10,7 +9,7 @@ import { CalendarComponent } from '../calendar/calendar.component';
 
 
 export class HomePage implements OnInit {
-
+  
 
   
   constructor() { 

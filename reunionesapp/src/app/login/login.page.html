@@ -1,0 +1,27 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="ion-text-center">
+    <h1>Bienvenido</h1>
+    <p>Inicia sesión con tu cuenta</p>
+  </div>
+
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="mail"></ion-icon> Correo Electrónico
+    </ion-label>
+    <ion-input type="email" [(ngModel)]="correoElectronico" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+ <br>
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="lock-closed"></ion-icon> Contraseña
+    </ion-label>
+    <ion-input type="password" [(ngModel)]="contrasena" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="iniciarSesion()">Iniciar Sesión</ion-button>
+
+  <div class="ion-text-center ion-margin-top">
+    <p>¿No tienes una cuenta? <a href="/register" (click)="registrarse()">Regístrate</a></p>
+    <p>¿Tienes un código de invitado? <a href="#" (click)="ingresarCodigoInvitado()">Ingresa tu código</a></p>
+  </div>
+</ion-content>

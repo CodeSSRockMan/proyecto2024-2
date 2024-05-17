@@ -1,0 +1,60 @@
+/* Estilos específicos para el componente DatePickerComponent */
+
+.date-picker-container {
+    font-family: Arial, sans-serif;
+  }
+  
+  .calendar-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    padding: 10px;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .calendar-header button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+  }
+  
+  .calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  
+  .day-cell {
+    text-align: center;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .current-month-day {
+    color: #333;
+  }
+  
+  .other-month-day {
+    color: #ccc;
+  }
+  
+  .selected-day {
+    background-color: #007bff;
+    color: #fff;
+  }
+  .unselectable {
+    opacity: 0.5;
+    pointer-events: none; /* Deshabilita eventos de puntero */
+  }
+  
+  .today {
+    background-color: #ffc107; /* Amarillo */
+  }

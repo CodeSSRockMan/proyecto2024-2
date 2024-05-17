@@ -1,0 +1,17 @@
+<ion-input type="text" [(ngModel)]="selectedDateFormatted" (click)="toggleCalendar()"></ion-input>
+<div class="calendar-container" *ngIf="showCalendar">
+  <div class="calendar-header">
+    <button (click)="prevMonth()">◄</button>
+    <h3>{{ currentMonth }}</h3>
+    <button (click)="nextMonth()">►</button>
+  </div>
+  <div class="calendar-body">
+    <div *ngFor="let day of getDaysInMonth()" class="day-cell" 
+  [class.current-month-day]="day.isCurrentMonth" 
+  [class.today]="day.isToday" 
+  [class.selectable]="selectable(day)"
+  (click)="selectDay(day)">
+  {{ day.day }}
+</div>
+  </div>
+</div>

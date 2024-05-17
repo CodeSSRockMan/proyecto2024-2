@@ -1,24 +1,4 @@
-.calendar-container {
-    margin-bottom: 20px;
-  }
-  
-  .activities-title {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    margin-top: 20px;
-  }
-  
-  .activities-title ion-icon {
-    margin-right: 5px;
-  }
-  
-  .activity-list,
-  .dates-list {
-    margin-top: 20px;
-  }
-
-  /* Fondo verde claro */
+/* Fondo verde claro */
 ion-content {
     --ion-background-color: #e5ffea !important; /* Color verde claro */
 }

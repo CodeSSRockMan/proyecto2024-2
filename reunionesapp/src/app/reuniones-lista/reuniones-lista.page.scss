@@ -1,0 +1,120 @@
+/* Fondo verde claro */
+ion-content {
+    --ion-background-color: #e5ffea !important; /* Color verde claro */
+}
+
+/* Color de texto azul */
+ion-label, ion-input, ion-textarea, ion-button, .ion-text-center a {
+    color: #007bff !important; /* Color azul */
+}
+
+/* Estilo para el botón de iniciar sesión */
+ion-button {
+    color: #ffffff !important; /* Color de texto blanco */
+    font-weight: bold; /* Añade negrita al texto del botón */
+    font-size: 16px; /* Tamaño de fuente personalizado */
+    padding: 10px 20px; /* Ajusta el espacio dentro del botón */
+}
+
+/* Estilo para los elementos de entrada */
+.input-item {
+    --background: #ffffff; /* Color de fondo blanco */
+    --border-radius: 10px; /* Bordes redondeados */
+    --padding-start: 20px; /* Espacio a la izquierda para el icono */
+    --border: 2px solid #007bff; /* Color de contorno azul */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+}
+
+/* Limitar el número de caracteres en los campos de entrada */
+ion-input {
+    --maxlength: 30; /* Límite de caracteres */
+}
+
+/* Estilos para la pregunta */
+.question {
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #007bff !important; /* Centrar el texto */
+}
+
+/* Estilos para los contenedores de opciones */
+.options-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Estilos para cada opción */
+.option {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 48%; /* Ancho del contenedor */
+    height: 120px; /* Altura del contenedor */
+    margin-bottom: 10px; /* Espacio inferior */
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #ffffff; /* Color de fondo blanco */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+    cursor: pointer; /* Cambia el cursor al hacer hover */
+    transition: background-color 0.3s; /* Transición al hacer hover */
+}
+
+.option:hover {
+    background-color: #f0f0f0; /* Cambia el color de fondo al hacer hover */
+}
+
+.option.center {
+    width: 100%; /* Ancho del contenedor centrado */
+}
+
+/* Estilos para los íconos */
+ion-icon {
+    font-size: 36px; /* Tamaño de los íconos */
+    color: #007bff; /* Color azul */
+    margin-bottom: 8px; /* Espacio inferior */
+}
+
+/* Estilos para las cards */
+.card {
+    width: calc(50% - 20px); /* Ajuste para ocupar el 50% del ancho con un espacio de 20px entre las cards */
+    margin-bottom: 20px; /* Espacio entre las cards */
+    padding: 10px;
+    background-color: #fff;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.card:nth-child(odd) {
+    margin-right: 20px; /* Espacio a la derecha de las cards impares */
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: calc(100% - 20px); /* Para dispositivos más pequeños, ocupar el 100% del ancho */
+    }
+
+    .card:nth-child(odd) {
+        margin-right: 0; /* No se aplica margen a la última card de cada fila en dispositivos móviles */
+    }
+}
+
+.container {
+    margin: 0 auto; /* Centrar el contenedor horizontalmente */
+    max-width: 1200px; /* Ancho máximo del contenedor */
+    padding: 0 20px; /* Agregar espacio a ambos lados del contenedor */
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Estilos para el contenido scrollable */
+.scrollable-content {
+    max-height: 200px; /* Altura máxima para el contenido scrollable */
+    overflow-y: auto; /* Habilitar scroll vertical si el contenido excede la altura máxima */
+}

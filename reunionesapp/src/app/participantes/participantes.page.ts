@@ -11,8 +11,8 @@ interface Participante {
 })
 export class ParticipantesPage implements OnInit {
   participantes: Participante[] = [
-    { nombre: 'Juan', telefono: '123456789' },
-    { nombre: 'María', telefono: '987654321' }
+    { nombre: 'Juan', telefono: '+56 934567890' },
+    { nombre: 'María', telefono: '+56 987654321' }
     // Agrega más participantes según sea necesario
   ];
   constructor() { }

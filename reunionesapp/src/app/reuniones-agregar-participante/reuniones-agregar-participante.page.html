@@ -1,13 +1,27 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Agregar participante</ion-title>
+    <ion-title>Añadir Participante</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Agregar participante</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="question">¿Cómo quieres agregar?</div>
+
+  <div class="options-container">
+    <div class="option">
+      <ion-icon name="logo-whatsapp"></ion-icon>
+      WhatsApp
+    </div>
+
+    <div class="option">
+      <ion-icon name="book"></ion-icon>
+      Contactos
+    </div>
+
+    <div class="option center">
+      <ion-icon name="create"></ion-icon>
+      Ingreso manual
+    </div>
+  </div>
 </ion-content>
+

@@ -1,0 +1,41 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="ion-text-center">
+    <h1>Registro</h1>
+    <p>Crea una nueva cuenta</p>
+  </div>
+
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="person"></ion-icon> Nombre de usuario
+    </ion-label>
+    <ion-input type="text" [(ngModel)]="nombreUsuario" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+  <br>
+
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="mail"></ion-icon> Correo Electrónico
+    </ion-label>
+    <ion-input type="email" [(ngModel)]="correoElectronico" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+  <br>
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="call"></ion-icon> Teléfono
+    </ion-label>
+    <ion-input type="tel" [(ngModel)]="telefono" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+  <br>
+  <ion-item lines="none" class="input-item">
+    <ion-label position="stacked">
+      <ion-icon name="lock-closed"></ion-icon> Contraseña
+    </ion-label>
+    <ion-input type="password" [(ngModel)]="contrasena" clearInput="true" maxlength="30"></ion-input>
+  </ion-item>
+  <br>
+  <ion-button expand="block" (click)="registrar()">Registrar</ion-button>
+  <br>
+  <div class="ion-text-center ion-margin-top">
+    <p>¿Ya tienes una cuenta? <a href="/login" (click)="irAInicioSesion()">Inicia sesión</a></p>
+  </div>
+</ion-content>

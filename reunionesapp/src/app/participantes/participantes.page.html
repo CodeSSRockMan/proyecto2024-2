@@ -15,12 +15,24 @@
 
   <div class="container mt-3">
     <div *ngFor="let participante of participantes" class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Nombre: {{ participante.nombre }}</h5>
-        <p class="card-text">Teléfono: {{ participante.telefono }}</p>
-        <button (click)="llamar(participante.telefono)" class="btn btn-primary mr-2">Llamar</button>
-        <button (click)="enviarWhatsapp(participante.telefono)" class="btn btn-success">WhatsApp</button>
+      <div class="card-body d-flex justify-content-between align-items-center"  style="height: 70px;">
+        <div class="d-flex flex-column align-items-center">
+          <h5 class="card-title mb-1">{{ participante.nombre }}</h5>
+          <p class="card-text mb-0 font-weight-bold">{{ participante.telefono }}</p>
+        </div>
+        <div class="d-flex align-items-center justify-content-end">
+          <ion-button (click)="llamar(participante.telefono)" color="primary" class="mr-2" fill="clear">
+            <ion-icon slot="icon-only" name="call-outline"></ion-icon>
+          </ion-button>
+          <ion-button (click)="enviarWhatsapp(participante.telefono)" color="success" fill="clear">
+            <ion-icon slot="icon-only" name="logo-whatsapp"></ion-icon>
+          </ion-button>
+        </div>
       </div>
     </div>
   </div>
+  <hr>
+  
+  <hr>
+  
 </ion-content>

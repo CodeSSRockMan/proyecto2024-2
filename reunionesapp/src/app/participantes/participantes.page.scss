@@ -1,0 +1,31 @@
+/* Fondo verde claro */
+ion-content {
+    --ion-background-color: #e5ffea !important; /* Color verde claro */
+}
+
+/* Color de texto azul */
+ion-label, ion-input, ion-textarea, ion-button, .ion-text-center a {
+    color: #007bff !important; /* Color azul */
+}
+
+/* Estilo para el botón de iniciar sesión */
+ion-button {
+    color: #ffffff !important; /* Color de texto blanco */
+    font-weight: bold; /* Añade negrita al texto del botón */
+    font-size: 16px; /* Tamaño de fuente personalizado */
+ /* Ajusta el espacio dentro del botón */
+}
+
+/* Estilo para los elementos de entrada */
+.input-item {
+    --background: #ffffff; /* Color de fondo blanco */
+    --border-radius: 10px; /* Bordes redondeados */
+    --padding-start: 20px; /* Espacio a la izquierda para el icono */
+    --border: 2px solid #007bff; /* Color de contorno azul */
+    --box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+}
+
+/* Limitar el número de caracteres en los campos de entrada */
+ion-input {
+    --maxlength: 30; /* Límite de caracteres */
+}
