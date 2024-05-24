@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="false" class="ion-padding">
   <div class="ion-text-center">
     <h1>Bienvenido</h1>
     <p>Inicia sesión con tu cuenta</p>
@@ -22,6 +22,16 @@
 
   <div class="ion-text-center ion-margin-top">
     <p>¿No tienes una cuenta? <a href="/register" (click)="registrarse()">Regístrate</a></p>
-    <p>¿Tienes un código de invitado? <a href="#" (click)="ingresarCodigoInvitado()">Ingresa tu código</a></p>
+    <p>¿Tienes un código de invitado? <a href="javascript:void(0);" (click)="ingresarCodigoInvitado()">Ingresa tu código</a></p>
   </div>
+
+  <ion-modal [isOpen]="mostrarModal" (didDismiss)="onModalDismissed($event)">
+    <div class="modal-wrapper">
+      <ion-content class="modal-content">
+        <app-guest-code-modal (codeSubmitted)="onCodeSubmitted($event)" (modalClosed)="closeModal()"></app-guest-code-modal>
+      </ion-content>
+    </div>
+  </ion-modal>
+  
+  
 </ion-content>

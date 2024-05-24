@@ -4,7 +4,7 @@ ion-content {
 }
 
 /* Color de texto azul */
-ion-label, ion-input, ion-textarea, ion-button, .ion-text-center a {
+ion-label, ion-input, ion-textarea, .ion-text-center a {
     color: #007bff !important; /* Color azul */
 }
 
@@ -29,3 +29,46 @@ ion-button {
 ion-input {
     --maxlength: 30; /* Límite de caracteres */
 }
+
+/* Estilos para el modal */
+.modal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 80%; /* Ancho máximo del modal */
+    max-height: 80%; /* Altura máxima del modal */
+  }
+  
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px; /* Ajusta el espacio alrededor del contenido */
+  }
+/* Estilos para el modal */
+.guest-code-modal {
+    --width: 80%; /* Ancho del modal */
+    --height: 60%; /* Altura del modal */
+    --border-radius: 10px; /* Bordes redondeados del modal */
+    --background: #fff; /* Color de fondo del modal */
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra del modal */
+    --position: absolute; /* Posición absoluta del modal */
+    --top: 20%; /* Distancia desde la parte superior */
+    --left: 10%; /* Distancia desde la izquierda */
+  }
+
+  /* Estilo personalizado para el toast */
+.custom-toast {
+    .toast-wrapper {
+      width: 80vw; /* Ancho del toast */
+      max-width: 300px; /* Ancho máximo del toast */
+      min-height: 100px; /* Altura mínima del toast */
+    }
+  
+    .toast-message {
+      white-space: normal; /* Permite el ajuste de línea */
+      padding: 10px; /* Espacio alrededor del mensaje */
+    }
+  }
+  

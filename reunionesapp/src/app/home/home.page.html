@@ -5,7 +5,7 @@
     <!-- Insertar el componente de calendario personalizado -->
     <ion-card>
       <ion-card-content>
-        <app-date-picker></app-date-picker>
+        <app-date-picker [upcomingActivityDate]="upcomingActivityDate"></app-date-picker>
       </ion-card-content>
     </ion-card>
     <!-- <app-calendar></app-calendar> -->
@@ -16,33 +16,41 @@
     <ion-icon name="calendar-outline"></ion-icon> Actividades Próximas
   </div>
 
-  <!-- Lista de actividades próximas -->
   <ion-card class="activity-list">
     <ion-card-header>
-      Actividades próximas
+      Actividades Próximas
     </ion-card-header>
     <ion-card-content>
-      <!-- Aquí iría tu lista de actividades próximas -->
-      <!-- <ion-list>
+      <ion-list>
         <ion-item *ngFor="let activity of upcomingActivities">
-          {{ activity.date }} - {{ activity.description }}
+          <ion-label>
+            <h2>{{ formatDate(activity.date.toString()) }}</h2>
+            <div class="description-container">
+              <p>{{ activity.description }}</p>
+            </div>
+            <div class="location-container">
+              <p>{{ activity.lugar }}</p>
+            </div>
+          </ion-label>
         </ion-item>
-      </ion-list> -->
+      </ion-list>
     </ion-card-content>
   </ion-card>
+  
 
-  <!-- Lista de fechas cercanas -->
-  <ion-card class="dates-list">
-    <ion-card-header>
-      Fechas Cercanas
-    </ion-card-header>
-    <ion-card-content>
-      <!-- Aquí iría tu lista de fechas cercanas -->
-      <!-- <ion-list>
-        <ion-item *ngFor="let date of upcomingDates">
-          {{ date }}
-        </ion-item>
-      </ion-list> -->
-    </ion-card-content>
-  </ion-card>
+<!-- Lista de fechas cercanas -->
+<ion-card class="dates-list">
+  <ion-card-header>
+    Fechas Cercanas
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item *ngFor="let date of upcomingDates">
+        <ion-label>
+          <h2>{{ formatDate(date.toISOString()) }}</h2>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>
 </ion-content>

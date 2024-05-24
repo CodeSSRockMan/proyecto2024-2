@@ -1,4 +1,6 @@
-<ion-input type="text" [(ngModel)]="selectedDateFormatted" (click)="toggleCalendar()"></ion-input>
+<ion-title class="custom-title">
+  {{ capitalizeFirstLetter(selectedDateFormatted) }}
+</ion-title>
 <div class="calendar-container" *ngIf="showCalendar">
   <div class="calendar-header">
     <button (click)="prevMonth()">◄</button>
@@ -6,12 +8,14 @@
     <button (click)="nextMonth()">►</button>
   </div>
   <div class="calendar-body">
-    <div *ngFor="let day of getDaysInMonth()" class="day-cell" 
-  [class.current-month-day]="day.isCurrentMonth" 
-  [class.today]="day.isToday" 
+    <div *ngFor="let day of getDaysInMonth()" class="day-cell"
+  [class.current-month-day]="day.isCurrentMonth"
+  [class.today]="day.isToday"
   [class.selectable]="selectable(day)"
-  (click)="selectDay(day)">
+  [class.selected-day]="day.isSelected && !day.isToday"
+  (click)="day && selectDay(day)">
   {{ day.day }}
 </div>
+
   </div>
 </div>

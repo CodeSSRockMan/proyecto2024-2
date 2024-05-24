@@ -17,6 +17,8 @@ export class AppComponent {
     { title: 'Mis reuniones', url: '/reuniones-lista', icon: 'briefcase' },
     { title: 'Participantes', url: '/participantes', icon: 'people' },
     { title: 'Agregar participantes', url: '/reuniones-agregar-participante', icon: 'people' },
+    { title: 'Seleccionar Fecha', url: '/select-date', icon: 'calendar' },
+    { title: 'Registro de Invitado', url: '/register-guest', icon: 'person-add' }
   ];
   public labels = [
     

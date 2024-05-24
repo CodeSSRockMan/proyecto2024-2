@@ -46,6 +46,14 @@ const routes: Routes = [
   {
     path: 'agregar-participante-manual',
     loadChildren: () => import('./agregar-participante-manual/agregar-participante-manual.module').then( m => m.AgregarParticipanteManualPageModule)
+  },
+  {
+    path: 'register-guest',
+    loadChildren: () => import('./register-guest/register-guest.module').then( m => m.RegisterGuestPageModule)
+  },
+  {
+    path: 'select-date',
+    loadChildren: () => import('./select-date/select-date.module').then( m => m.SelectDatePageModule)
   }
 ];
 

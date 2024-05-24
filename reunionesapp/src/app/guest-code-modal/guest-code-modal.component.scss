@@ -1,0 +1,89 @@
+/* Fondo verde claro */
+ion-content {
+    --ion-background-color: #e5ffea !important; /* Color verde claro */
+  }
+  
+  /* Color de texto azul */
+  ion-label, ion-input, ion-textarea, ion-button, .ion-text-center a {
+    color: #007bff !important; /* Color azul */
+  }
+  
+  /* Estilo para el botón de iniciar sesión */
+  ion-button {
+    color: #ffffff !important; /* Color de texto blanco */
+    font-weight: bold; /* Añade negrita al texto del botón */
+    font-size: 16px; /* Tamaño de fuente personalizado */
+    --background: transparent; /* Fondo transparente */
+    --border-radius: 10px; /* Bordes redondeados */
+    --box-shadow: none; /* Sin sombra */
+    padding: 16px; /* Ajusta el espacio dentro del botón */
+  }
+  
+  /* Estilo para los elementos de entrada */
+  ion-input {
+    --background: #ffffff; /* Color de fondo blanco */
+    --border-radius: 10px; /* Bordes redondeados */
+    --padding-start: 20px; /* Espacio a la izquierda para el icono */
+    --border: 2px solid #007bff; /* Color de contorno azul */
+    --box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+    --maxlength: 30; /* Límite de caracteres */
+  }
+  
+  /* Modal Wrapper */
+  .modal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 80%; /* Ajusta el ancho del modal según tus necesidades */
+    max-height: 80%; /* Ajusta la altura del modal según tus necesidades */
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    padding: 16px; /* Ajusta el espacio alrededor del contenido */
+  }
+  
+  /* Modal Header */
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 16px; /* Ajusta el espacio entre el encabezado y el contenido */
+  }
+  
+  /* Botón de Enviar */
+  ion-button.send-button {
+    --background: transparent; /* Oculta el fondo del botón */
+    --border-radius: 0; /* Elimina el radio del borde */
+    --box-shadow: none; /* Elimina cualquier sombra */
+    --padding-bottom: 16px; /* Ajusta el espacio en la parte inferior del botón */
+    --margin-top: auto; /* Coloca el botón al final del contenido */
+    color: #007bff !important; /* Color de texto azul */
+    --background: #e5ffea; /* Fondo verde claro */
+    --color: #ffffff; /* Color de texto blanco */
+    --border: 2px solid #007bff; /* Borde sólido de 2px de color azul */
+    --border-radius: 10px; /* Borde redondeado de 10px */
+  }
+  
+  /* Botón de Cerrar */
+  ion-button.close-button {
+    margin-top: -20px; /* Ajusta la posición del botón hacia arriba */
+    margin-right: -10px; /* Ajusta la posición del botón hacia la izquierda */
+  }
+  
+  /* Consulta de medios para dispositivos móviles */
+/* Estilos para dispositivos móviles */
+@media only screen and (max-width: 767px) {
+    /* Estilos específicos para dispositivos móviles */
+    .modal-wrapper {
+      top: 50%; /* Centra verticalmente el modal */
+      left: 50%; /* Centra horizontalmente el modal */
+      transform: translate(-50%, -50%); /* Centra el modal */
+    }
+  }

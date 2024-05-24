@@ -1,0 +1,18 @@
+<!-- select-date.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="ion-text-center">Selecciona una Fecha</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item lines="full">
+      <ion-label position="floating">Selecciona tu fecha disponible</ion-label>
+      <ion-select [(ngModel)]="selectedDate">
+        <ion-select-option *ngFor="let date of availableDates" [value]="date">{{ date }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-button expand="block" (click)="submitVote()" class="send-button">Enviar</ion-button>
+</ion-content>

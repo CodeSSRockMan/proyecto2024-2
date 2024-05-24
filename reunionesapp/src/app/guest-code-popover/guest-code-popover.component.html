@@ -1,0 +1,12 @@
+<ion-content class="modal-content">
+  <div class="modal-header">
+    <div class="title-container">
+      <ion-label class="modal-title">Ingresa tu código de invitación</ion-label>
+    </div>
+
+  </div>
+  <ion-item lines="none" class="input-item">
+    <ion-input [(ngModel)]="guestCode" class="input-field" maxlength="10"></ion-input>
+  </ion-item>
+  <ion-button expand="block" color="primary" class="send-button" (click)="submitCode()">Enviar</ion-button>
+</ion-content>

@@ -13,6 +13,16 @@
     margin-right: 5px;
   }
   
+  .progress-container {
+    max-height: 50px; /* o la altura que desees */
+    overflow-y: auto;
+  }
+
+  .activity-list ion-label p {
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+    overflow-x: auto; /* Habilita el desplazamiento horizontal si el texto se desborda */
+  }
+
   .activity-list,
   .dates-list {
     margin-top: 20px;
@@ -48,4 +58,16 @@ ion-button {
 /* Limitar el número de caracteres en los campos de entrada */
 ion-input {
     --maxlength: 30; /* Límite de caracteres */
+}
+.description-container {
+  width: 100%; /* Asigna un ancho al contenedor */
+  overflow-x: scroll;/* Muestra la barra de desplazamiento horizontal automáticamente */
+  white-space: nowrap; /* Habilita el desplazamiento horizontal si el contenido desborda el ancho del contenedor */
+}
+
+.description-container h2,
+.description-container p {
+  display: inline-block; /* Hace que los elementos de encabezado y párrafo se muestren en línea */
+  margin: 0; /* Elimina cualquier margen que pueda afectar el ancho */
+  padding: 0; /* Elimina cualquier relleno que pueda afectar el ancho */
 }

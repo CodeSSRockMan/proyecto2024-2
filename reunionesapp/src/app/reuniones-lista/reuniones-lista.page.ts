@@ -33,8 +33,8 @@ export class ReunionesListaPage implements OnInit {
   obtenerReuniones() {
     const fechaActivacion = '2024-04-20';
     this.reuniones = [
-      { motivo: 'Reunión de planificación', comentarios: 'Planificando actividad - Poner las fechas disponibles y añadir participantes', estado: 'planificacion', fecha: '', participantes: [] },
-      { motivo: 'Reunión de coordinación', comentarios: 'Seleccionando fechas - Los participantes eligen las fechas disponibles', estado: 'coordinacion', fecha: '', participantes: [] },
+      { motivo: 'Reunión de planificación', comentarios: 'Planificando actividad - Poner las fechas disponibles y añadir participantes', estado: 'planificacion', fecha: fechaActivacion, participantes: [] },
+      { motivo: 'Reunión de coordinación', comentarios: 'Seleccionando fechas - Los participantes eligen las fechas disponibles', estado: 'coordinacion', fecha: fechaActivacion, participantes: [] },
       { motivo: 'Reunión activa', comentarios: 'Reunión coordinada - Se espera que se realice', estado: 'activa', fecha: fechaActivacion, participantes: [{ nombre: 'Juan', correo: 'juan@example.com' }, { nombre: 'María', correo: 'maria@example.com' }] },
       { motivo: 'Reunión finalizada', comentarios: 'Reunión terminada - La reunión ha finalizado', estado: 'finalizada', fecha: fechaActivacion, participantes: [{ nombre: 'Pedro', correo: 'pedro@example.com' }, { nombre: 'Ana', correo: 'ana@example.com' }] }
     ];

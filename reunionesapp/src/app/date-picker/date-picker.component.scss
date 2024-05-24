@@ -47,14 +47,23 @@
   }
   
   .selected-day {
-    background-color: #007bff;
-    color: #fff;
+    background-color: #007bff; /* Azul */
+    color: #fff; /* Texto en blanco */
   }
   .unselectable {
     opacity: 0.5;
     pointer-events: none; /* Deshabilita eventos de puntero */
+    background-color: #f0f0f0; /* Cambiar el color de fondo */
+    color: #999; /* Cambiar el color del texto */
+    border-radius: 50%; /* Hacer los días no seleccionables redondos */
   }
   
   .today {
     background-color: #ffc107; /* Amarillo */
+  }
+  .custom-title {
+    text-align: center;
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+    overflow: hidden; /* Oculta cualquier parte del texto que no quepa */
+    font-size: calc(1em + 1vw); /* Tamaño de fuente relativo */
   }
