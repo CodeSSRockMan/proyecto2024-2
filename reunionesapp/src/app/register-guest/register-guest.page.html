@@ -6,23 +6,32 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-item lines="none" class="input-item">
-      <ion-label position="stacked">
-        Nombre
-      </ion-label>
-      <ion-input type="text" [(ngModel)]="guestName" clearInput="true" maxlength="30"></ion-input>
-    </ion-item>
-    <br>
-    <ion-item lines="none" class="input-item">
-      <ion-label position="stacked">
-        Teléfono
-      </ion-label>
-      <ion-input type="tel" [(ngModel)]="guestPhone" clearInput="true" maxlength="30"></ion-input>
-    </ion-item>
-  </ion-list>
+  <form *ngIf="guestForm" [formGroup]="guestForm" (ngSubmit)="registerGuest()">
+    <ion-list>
+      <ion-item lines="none" class="input-item">
+        <ion-label position="stacked">
+          Nombre
+        </ion-label>
+        <ion-input type="text" formControlName="guestName" clearInput="true" maxlength="30"></ion-input>
+      </ion-item>
+      <br>
+      <ion-item lines="none" class="input-item">
+        <ion-label position="stacked">
+          Teléfono
+        </ion-label>
+        <ion-input type="tel" formControlName="guestPhone" clearInput="true" maxlength="30"></ion-input>
+      </ion-item>
+    </ion-list>
 
-  <ion-button expand="block" (click)="registerGuest()">Continuar</ion-button>
+    <!-- Muestra mensajes de error -->
+    <div *ngIf="guestForm.get('guestName')?.hasError('required')" class="error-message">El nombre es requerido.</div>
+    <div *ngIf="guestForm.get('guestPhone')?.hasError('required')" class="error-message">El teléfono es requerido.</div>
+    <!-- Mostrar mensaje de error para el número de teléfono -->
+    <div *ngIf="guestForm.get('guestPhone')?.errors?.['invalidPhoneNumber']" class="error-message">
+      El teléfono debe comenzar con el prefijo +56 y tener exactamente 9 dígitos.
+    </div>
+    <ion-button expand="block" type="submit" [disabled]="!guestForm.valid">Continuar</ion-button>
+  </form>
 
   <div class="ion-text-center ion-margin-top">
     <p>¿Ya tienes una cuenta? <a href="/login" (click)="iniciarSesion()">Iniciar sesión</a></p>

@@ -29,3 +29,67 @@ ion-button {
 ion-input {
     --maxlength: 30; /* Límite de caracteres */
 }
+
+.edicion input {
+    background-color: #f2f2f2; /* Cambia el color de fondo para resaltar */
+}
+
+input.form-control {
+    border: 1px solid #ced4da; /* Establece el borde del campo de entrada */
+    border-radius: 0.25rem; /* Establece el radio del borde */
+}
+
+.fixed-width {
+    width: 100px; /* Establece el ancho fijo deseado */
+}
+
+.custom-input {
+    /* Estilos para el fondo */
+    background-color: transparent !important; /* Fondo transparente */
+    box-shadow: none !important; /* Sin sombra */
+    border: none !important; /* Sin borde */
+
+    /* Estilos para el texto */
+    color: black !important; /* Color de texto predeterminado */
+}
+
+.custom-input:focus {
+    background-color: #f2f2f2 !important; /* Cambia el color de fondo para resaltar al enfocar */
+}
+.card {
+    max-width: 400px; /* Establece el ancho máximo deseado para la tarjeta */
+}
+
+.fixed-width-telefono {
+    max-width: 100px; /* Establece el ancho máximo deseado para el campo de teléfono */
+    overflow: hidden; /* Oculta el contenido que desborda */
+    text-overflow: clip; /* Añade elipsis al final del texto desbordado */
+    white-space: nowrap; /* Evita que el texto se divida en múltiples líneas */
+}
+
+.fixed-width-nombre {
+    max-width: 100px; /* Establece el ancho máximo deseado para el campo de nombre */
+    overflow: hidden; /* Oculta el contenido que desborda */
+    text-overflow: clip; /* Añade elipsis al final del texto desbordado */
+    white-space: nowrap; /* Evita que el texto se divida en múltiples líneas */
+}
+
+@keyframes moveText {
+    0% {
+      transform: translate(0);
+    }
+    50% {
+      transform: translate(-50px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+  
+  
+  .moving-text {
+    animation: moveText 5s infinite;
+    white-space: nowrap; /* Evita que el texto se divida en múltiples líneas */
+    overflow: hidden; /* Oculta el contenido que desborda */
+    text-overflow: clip; /* Recorta el texto cuando se desborda */
+  }

@@ -1,99 +1,53 @@
-/* Estilo para el contenedor del título */
-/* Estilo para el contenedor del título */
-/* Estilo para el contenedor del título */
-.title-container {
-    flex-grow: 1; /* Hace que el contenedor del título ocupe todo el espacio disponible */
-    display: flex; /* Usa flexbox para alinear el contenido */
-    align-items: center; /* Centra verticalmente el contenido */
-    padding: 8px 8px 8px 8px; /* Añade relleno a todos los lados del título */
-}
-  
-  /* Estilo para el contenedor del botón */
-  .button-container {
-    width: 30%; /* Establece el ancho del contenedor del botón */
-  }
-  
-  /* Fondo verde claro */
-  ion-content {
-    --ion-background-color: #e5ffea !important;
-    --ion-padding: 16px; /* Color verde claro */
-  }
-  
-  /* Color de texto azul */
-  /* Color de texto azul para ion-label, ion-textarea y .ion-text-center a */
-ion-label, ion-textarea, .ion-text-center a {
-    color: #007bff !important; /* Color azul */
-    text-align: center;
+/* Fondo verde claro */
+ion-content {
+  --ion-background-color: #e5ffea !important; /* Color verde claro */
 }
 
-/* Color de texto azul solo para ion-input */
+/* Color de texto azul */
+ion-label, ion-input, ion-textarea, .ion-text-center a {
+  color: #007bff !important; /* Color azul */
+}
+
+/* Estilo para el botón de registrar */
+ion-button {
+  color: #ffffff !important; /* Color de texto blanco */
+  font-weight: bold; /* Añade negrita al texto del botón */
+  font-size: 16px; /* Tamaño de fuente personalizado */
+  padding: 10px 20px; /* Ajusta el espacio dentro del botón */
+}
+
+/* Estilo para los elementos de entrada */
+.input-item {
+  --background: #ffffff; /* Color de fondo blanco */
+  --border-radius: 10px; /* Bordes redondeados */
+  --padding-start: 20px; /* Espacio a la izquierda para el icono */
+  --border: 2px solid #007bff; /* Color de contorno azul */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+}
+
+/* Limitar el número de caracteres en los campos de entrada */
 ion-input {
-    color: #007bff !important; /* Color azul */
+  --maxlength: 30; /* Límite de caracteres */
 }
 
-  /* Estilo para el botón de cerrar en el popover */
-ion-button.close-button {
-    font-size: 24px; /* Tamaño de fuente más grande */
-    color: #007bff !important; /* Color azul para el botón de cerrar */
-    margin-right: 10px; /* Ajusta el margen derecho */
-  }
-  
+/* Estilos para el modal */
+.modal-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80%; /* Ancho máximo del modal */
+  max-height: 80%; /* Altura máxima del modal */
+}
 
-  /* Estilo para los elementos de entrada */
-  ion-input {
-    --background: #ffffff; /* Color de fondo blanco */
-    --border-radius: 10px; /* Bordes redondeados */
-    --padding-start: 20px; /* Espacio a la izquierda para el icono */
-    --border: 2px solid #007bff; /* Color de contorno azul */
-    --box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
-    --maxlength: 30; /* Límite de caracteres */
-  }
-  
-  /* Modal Wrapper */
-  .modal-wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 80%; /* Ajusta el ancho del modal según tus necesidades */
-    max-height: 80%; /* Ajusta la altura del modal según tus necesidades */
-  }
-  
-  /* Modal Content */
-  .modal-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-    padding: 16px; /* Ajusta el espacio alrededor del contenido */
-  }
-  
-  /* Modal Header */
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 16px; /* Ajusta el espacio entre el encabezado y el contenido */
-  }
-  
-/* Estilo para los botones dentro del componente */
-:host ion-button {
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px 20px;
-    color: #007bff; /* Texto azul */
-    background-color: transparent; /* Fondo transparente */
-  }
-  
-  /* Estilo específico para el botón de enviar */
-  :host ion-button.send-button {
-    background-color: transparent; /* Fondo transparente */
-    color: #007bff; /* Texto azul */
-  }
-  
-
-  /* Estilo para el título del modal */
-.modal-title {
-    font-size: 18px; /* Tamaño de fuente personalizado */
-  }
-  
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px; /* Ajusta el espacio alrededor del contenido */
+}
+.error-message {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 5px;
+}

@@ -46,4 +46,8 @@ ion-content {
     align-items: center;
     padding: 16px; /* Ajusta el espacio alrededor del contenido */
   }
-  
+  .error-message {
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+  }
