@@ -1,56 +1,69 @@
 <ion-content [fullscreen]="true" class="ion-padding">
+
+  
   <!-- Calendario -->
   <div class="calendar-container">
-    <!-- Aquí iría tu componente de calendario -->
-    <!-- Insertar el componente de calendario personalizado -->
     <ion-card>
+
+      <ion-card-header>
+        <ion-card-title style="text-align: center;">Vista General</ion-card-title>
+      </ion-card-header>
       <ion-card-content>
-        <app-date-picker [upcomingActivityDate]="upcomingActivityDate"></app-date-picker>
+        <app-date-picker [allowSelection]="false" [reuniones]="reuniones"></app-date-picker>
       </ion-card-content>
     </ion-card>
-    <!-- <app-calendar></app-calendar> -->
   </div>
 
-  <!-- Título de actividades próximas -->
+  <!-- Actividades creadas por el usuario -->
   <div class="activities-title">
-    <ion-icon name="calendar-outline"></ion-icon> Actividades Próximas
+    <ion-icon name="calendar-outline"></ion-icon> Actividades Creadas por el Usuario
   </div>
 
   <ion-card class="activity-list">
-    <ion-card-header>
-      Actividades Próximas
-    </ion-card-header>
     <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let activity of upcomingActivities">
-          <ion-label>
-            <h2>{{ formatDate(activity.date.toString()) }}</h2>
+      <ion-list *ngIf="!noActivitiesCreatedByUser">
+        <ion-item *ngFor="let reunion of reuniones" (click)="verParticipantes(reunion)">
+          <ion-label *ngIf="reunion.createdByUser && isValidReunion(reunion)">
+            <h2>{{ formatDate(reunion.fechas) }}</h2>
             <div class="description-container">
-              <p>{{ activity.description }}</p>
+              <p>{{ reunion.motivo }}</p>
             </div>
             <div class="location-container">
-              <p>{{ activity.lugar }}</p>
+              <p>{{ reunion.ubicacion }}</p>
             </div>
           </ion-label>
         </ion-item>
       </ion-list>
+      <div *ngIf="noActivitiesCreatedByUser" class="no-activities">
+        No hay actividades creadas por el usuario.
+      </div>
     </ion-card-content>
   </ion-card>
-  
 
-<!-- Lista de fechas cercanas -->
-<ion-card class="dates-list">
-  <ion-card-header>
-    Fechas Cercanas
-  </ion-card-header>
-  <ion-card-content>
-    <ion-list>
-      <ion-item *ngFor="let date of upcomingDates">
-        <ion-label>
-          <h2>{{ formatDate(date.toISOString()) }}</h2>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-card-content>
-</ion-card>
+  <!-- Actividades en las que el usuario participa -->
+  <div class="activities-title">
+    <ion-icon name="calendar-outline"></ion-icon> Actividades en las que Participa
+  </div>
+
+  <ion-card class="activity-list">
+    <ion-card-content>
+      <ion-list *ngIf="!noActivitiesParticipant">
+        <ion-item *ngFor="let reunion of reuniones" (click)="verParticipantes(reunion)">
+          <ion-label *ngIf="!reunion.createdByUser && isValidReunion(reunion)">
+            <h2>{{ formatDate(reunion.fechas) }}</h2>
+            <div class="description-container">
+              <p>{{ reunion.motivo }}</p>
+            </div>
+            <div class="location-container">
+              <p>{{ reunion.comentarios }}</p>
+            </div>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <div *ngIf="noActivitiesParticipant" class="no-activities">
+        No hay actividades en las que participes.
+      </div>
+    </ion-card-content>
+  </ion-card>
+  <div style="height: 200px;"></div>
 </ion-content>

@@ -37,7 +37,7 @@ export class LoginPage implements OnInit {
     await this.router.navigate(['/register']);
   }
 
-  async ingresarCodigoInvitado() {
+  async ingresarCodigoInvitado() { //THIS ONE!!!!
     const popover = await this.popoverController.create({
       component: GuestCodePopoverComponent,
       translucent: true
@@ -47,7 +47,7 @@ export class LoginPage implements OnInit {
       const codigoInvitacion = data.data;
       if (codigoInvitacion) {
         console.log('Código de invitación recibido:', codigoInvitacion);
-        this.router.navigate(['/home']); // Puedes realizar otras acciones aquí, como navegar a otra página
+        this.router.navigate(['/register-guest']); // Puedes realizar otras acciones aquí, como navegar a otra página
       }
     });
 
@@ -57,23 +57,23 @@ export class LoginPage implements OnInit {
   async onPopoverClosed(codigoInvitacion: string) {
     if (codigoInvitacion) {
       console.log('Código de invitación recibido:', codigoInvitacion);
-      await this.router.navigate(['/home']);
+      await this.router.navigate(['/register-guest']);
     } else {
       console.log('No se recibió ningún código de invitación');
     }
   }
 
   
-  async onModalDismissed(event: CustomEvent<OverlayEventDetail<any>>) { //THIS ONE
+  async onModalDismissed(event: CustomEvent<OverlayEventDetail<any>>) { //THIS ONE NOT?
     const data: string = event.detail.data;
     console.log('Datos recibidos:', data);
-    await this.router.navigate(['/home']);
+    await this.router.navigate(['/register-guest']);
     // Aquí puedes realizar cualquier lógica basada en el valor de 'data'
   }
 
  async onCodeSubmitted(code: string) {
     console.log('Código de invitado recibido:', code);
-    await this.router.navigate(['/home']);
+    await this.router.navigate(['/register-guest']);
     // Aquí puedes agregar lógica adicional para manejar el código de invitado
   }
   async closeModal() {

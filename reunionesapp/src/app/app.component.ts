@@ -15,10 +15,9 @@ export class AppComponent {
     { title: 'Crear reunión', url: '/reuniones', icon: 'mail' },
    // { title: 'Mis grupos', url: '/grupos', icon: 'grid' },
     { title: 'Mis reuniones', url: '/reuniones-lista', icon: 'briefcase' },
+    { title: 'Estado de mi reunión', url: '/estado-reunion', icon: 'briefcase' },
     { title: 'Participantes', url: '/participantes', icon: 'people' },
-    { title: 'Agregar participantes', url: '/reuniones-agregar-participante', icon: 'people' },
     { title: 'Seleccionar Fecha', url: '/select-date', icon: 'calendar' },
-    { title: 'Registro de Invitado', url: '/register-guest', icon: 'person-add' }
   ];
   public labels = [
     

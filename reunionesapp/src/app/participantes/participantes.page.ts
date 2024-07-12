@@ -1,6 +1,6 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { AbstractControl, ValidatorFn } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController, AlertController } from '@ionic/angular';
 
 interface Participante {
@@ -12,12 +12,31 @@ interface Participante {
   valoresOriginales?: Partial<Participante>;
 }
 
+interface Reunion {
+  motivo: string;
+  comentarios: string;
+  estado: string;
+  ubicacion?: string;
+  fecha: Date[];
+  participantes: Participante[];
+  createdByUser: boolean; // Indica si la reunión fue creada por el usuario
+}
+
 @Component({
   selector: 'app-participantes',
   templateUrl: './participantes.page.html',
   styleUrls: ['./participantes.page.scss'],
 })
 export class ParticipantesPage implements OnInit, AfterViewInit {
+  reunion: Reunion = {
+    motivo: '',
+    comentarios: '',
+    estado: '',
+    ubicacion:'',
+    fecha: [],
+    participantes: [],
+    createdByUser: false
+  };
   participantes: Participante[] = [
     { nombre: 'Juan', telefono: '+56 934567890' },
     { nombre: 'María', telefono: '+56 987654321', fechasElegidas: true }
@@ -29,9 +48,21 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private router: Router,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.reunion = history.state.reunion;
+  console.log('Reunión2:', this.reunion);
+    // Asigna la lista de participantes de la reunión a la variable 'participantes'
+    if (this.reunion && this.reunion.participantes) {
+      this.participantes = this.reunion.participantes;
+      console.log('Datos de la reunión:', this.reunion);
+      console.log('Participantes de la reunión:', this.participantes);
+      this.cdr.detectChanges();
+    }
+  }
 
   ngAfterViewInit() {
     this.detectOverflowAndAnimate();
@@ -132,7 +163,9 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
   }
 
   agregarParticipante() {
-    this.router.navigateByUrl('/reuniones-agregar-participante');
+    //this.router.navigate(['/reuniones-agregar-participante'], { state: { reunion: this.reunion } });
+    this.router.navigate(['/agregar-participante-manual'], { state: { reunion: this.reunion } });
+    
   }
 
   toggleEdicion(participante: Participante) {

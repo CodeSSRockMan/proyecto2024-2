@@ -1,36 +1,40 @@
-// Fondo verde claro
+/* Fondo verde claro */
 ion-content {
     --ion-background-color: #e5ffea !important; /* Color verde claro */
+    margin-bottom: 0;
 }
 
-// Color de texto azul
-ion-label, ion-input, ion-textarea {
+
+/* Color de texto azul */
+ion-label, ion-input, ion-textarea, .ion-text-center a {
     color: #007bff !important; /* Color azul */
 }
 
 .swiper-slide {
     height: auto !important;
-  }
+}
 
-
-  
-
-// Fondo blanco para los campos de entrada
+/* Fondo blanco para los campos de entrada */
 ion-input, ion-textarea {
     --ion-background-color: #ffffff !important; /* Fondo blanco */
+    --background: #ffffff !important; /* Fondo blanco */
+    --border-radius: 10px !important; /* Bordes redondeados */
+    --border: 2px solid #007bff !important; /* Color de contorno azul */
+    --padding-start: 20px !important; /* Espacio a la izquierda para el icono */
+    --min-height: 48px; /* Altura mínima para evitar que el label se corte */
 }
 
-// Espacio entre los elementos
+ion-textarea{
+    padding-top:6px;
+}
+/* Espacio entre los elementos */
 ion-item {
     margin-bottom: 20px;
+    --min-height: 80px; /* Ajuste de altura para evitar el corte del label y espacio entre label y cuadro de texto */
 }
 
-.custom-button {
-    color: #ffffff; /* Color de texto blanco */
-  }
-
-// Estilo para el botón de agregar fechas tentativas
-ion-button {
+/* Estilo para el botón de agregar fechas tentativas */
+ion-button.custom-button {
     --background: #007bff !important; /* Color de fondo azul para el botón */
     --color: #ffffff !important; /* Color de texto blanco */
     font-weight: bold; /* Añade negrita al texto del botón */
@@ -38,7 +42,7 @@ ion-button {
     padding: 10px 20px; /* Ajusta el espacio dentro del botón */
 }
 
-// Estilo para el botón de guardar
+/* Estilo para el botón de guardar */
 ion-button[type="submit"] {
     --background: #007bff !important; /* Color de fondo azul para el botón */
     --color: #ffffff !important; /* Color de texto blanco */
@@ -50,6 +54,76 @@ ion-button[type="submit"] {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.custom-icon {
+    padding-right: 10px;
+    margin-top: 32px; /* Ajuste para mover el icono hacia abajo */
+    margin-right: 20px; /* Ajuste para separar el icono del label */
   }
 
+  /* Estilos para el Slide 1 */
+  .slide1 {
+    height: 100vh; /* Utiliza el 100% de la altura de la ventana del navegador */
+    display: flex; /* Utiliza un diseño flexible */
+    flex-direction: column; /* Organiza el contenido verticalmente */
+  }
+
+  /* Ajusta el contenido del primer slide para llenar el espacio disponible */
+.slide1-content {
+  /* Hace que el contenido ocupe todo el espacio vertical disponible */
+    overflow-y: auto; /* Permite el desplazamiento vertical si el contenido es más grande que el espacio disponible */
+  }
+
+
+  .swiper-wrapper{
+    height: 100vh;
+  }
+
+  .slide2 {
+    height: calc(100vh - 56px); /* Establece la altura del contenido al 100% de la altura de la ventana */
+  overflow-y: auto;
+}
+
+.swiper-pagination-fixed {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999; /* Asegura que el paginador esté por encima de otros elementos */
+  }
+div.inner-scroll{
+    bottom: 0, im !important;;
+}
+
+/* Estilo para ajustar la altura del picker del ion-datetime */
+.custom-datetime {
+    --width: 100%;
+    --height: auto !important;
+  }
   
+  ion-picker-column {
+    max-height: 100px !important;
+    overflow-y: auto !important;
+  }
+  
+  ion-picker-column .picker-opt {
+    font-size: 14px !important; /* Ajusta el tamaño de la fuente */
+    padding: 5px !important; /* Ajusta el relleno */
+  }
+  
+  /* Si es necesario, apuntar más específicamente a los elementos dentro del picker */
+  ion-picker .picker-toolbar {
+    max-height: 50px !important;
+  }
+  
+  ion-picker .picker-wrapper {
+    max-height: 100px !important;
+    overflow-y: auto !important;
+  }
+  .date-card {
+  margin-bottom: 10px;
+}
+
+.time-item {
+  margin-bottom: 0;
+}

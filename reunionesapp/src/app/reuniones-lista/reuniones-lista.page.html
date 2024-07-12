@@ -19,8 +19,15 @@
       <div class="card-body">
         <h5 class="card-title">{{ reunion.motivo }}</h5>
         <p class="card-text">{{ reunion.comentarios }}</p>
+        <p class="card-text">{{ reunion.ubicacion }}</p>
         <p class="card-text">Estado: {{ reunion.estado }}</p>
-        <p class="card-text" *ngIf="reunion.fecha">Fecha: {{ reunion.fecha }}</p>
+        <p class="card-text" *ngIf="reunion.fechas.length">
+          Fechas:
+          <span *ngFor="let fecha of reunion.fechas; let i = index">
+            {{ fecha | date: 'fullDate' }}
+            <span *ngIf="i < reunion.fechas.length - 1">, </span>
+          </span>
+        </p>
         <div class="scrollable-content">
           <h6>Participantes:</h6>
           <div *ngFor="let participante of reunion.participantes">{{ participante.nombre }}</div>
@@ -28,4 +35,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Botón para mostrar reuniones finalizadas -->
+  <ion-button expand="block" (click)="toggleMostrarFinalizadas()">
+    {{ mostrarFinalizadas ? 'Ocultar Finalizadas' : 'Ver Finalizadas' }}
+  </ion-button>
 </ion-content>

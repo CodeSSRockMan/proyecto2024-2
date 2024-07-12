@@ -54,6 +54,10 @@ const routes: Routes = [
   {
     path: 'select-date',
     loadChildren: () => import('./select-date/select-date.module').then( m => m.SelectDatePageModule)
+  },
+  {
+    path: 'estado-reunion',
+    loadChildren: () => import('./estado-reunion/estado-reunion.module').then( m => m.EstadoReunionPageModule)
   }
 ];
 

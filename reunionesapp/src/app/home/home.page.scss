@@ -18,6 +18,11 @@
     overflow-y: auto;
   }
 
+  .activity-list {
+    max-height: calc(100vh - 240px); /* Ajusta la altura máxima de la lista de actividades */
+    overflow-y: auto; /* Agrega desplazamiento vertical si el contenido excede la altura máxima */
+  }
+
   .activity-list ion-label p {
     white-space: nowrap; /* Evita que el texto se divida en varias líneas */
     overflow-x: auto; /* Habilita el desplazamiento horizontal si el texto se desborda */
@@ -31,6 +36,7 @@
   /* Fondo verde claro */
 ion-content {
     --ion-background-color: #e5ffea !important; /* Color verde claro */
+    min-height: calc(100vh - 56px);
 }
 
 /* Color de texto azul */

@@ -1,13 +1,37 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>agregar-participante-manual</ion-title>
+    <ion-title>Agregar Participante</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">agregar-participante-manual</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <form *ngIf="formulario" [formGroup]="formulario" (ngSubmit)="agregarParticipante()">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input type="text" formControlName="nombre" clearInput="true" maxlength="30"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Correo electrónico</ion-label>
+        <ion-input type="email" formControlName="correo" clearInput="true"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-input type="tel" formControlName="telefono" clearInput="true"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <!-- Muestra mensajes de error -->
+    <div *ngIf="formulario.get('nombre')?.hasError('required')" class="error-message">El nombre es requerido.</div>
+    <div *ngIf="formulario.get('correo')?.hasError('required')" class="error-message">El correo es requerido.</div>
+    <div *ngIf="formulario.get('correo')?.hasError('email')" class="error-message">El correo no es válido.</div>
+    <div *ngIf="formulario.get('telefono')?.hasError('required')" class="error-message">El teléfono es requerido.</div>
+    <div *ngIf="formulario.get('telefono')?.hasError('invalidPhoneNumber')" class="error-message">
+      El teléfono debe comenzar con el prefijo +56 y tener exactamente 9 dígitos.
+    </div>
+
+    <ion-button expand="block" type="submit" [disabled]="formulario.invalid">Agregar Participante</ion-button>
+  </form>
 </ion-content>

@@ -15,6 +15,6 @@ import { ReunionesAgregarParticipantePage } from './reuniones-agregar-participan
     IonicModule,
     ReunionesAgregarParticipantePageRoutingModule
   ],
-  declarations: [ReunionesAgregarParticipantePage]
+  declarations: [ReunionesAgregarParticipantePage],
 })
 export class ReunionesAgregarParticipantePageModule {}

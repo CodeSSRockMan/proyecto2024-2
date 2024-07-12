@@ -26,17 +26,26 @@
             <h2>{{ formatDate(date.startDate) }}</h2>
             <p>{{ date.startDate | date: 'HH:mm' }} - {{ date.endDate | date: 'HH:mm' }}</p>
           </ion-label>
-          <ion-checkbox slot="start" [checked]="isSelectedDate(date.startDate)" (ionChange)="toggleSelectedDate(date.startDate)"></ion-checkbox>
+          <ion-checkbox slot="start" [checked]="date.selected" (ionChange)="toggleSelectedDate(date.startDate)"></ion-checkbox>
         </ion-item>
       </ion-card-content>
     </ion-card>
+
+      <!-- Opción para indicar que ninguna fecha es adecuada -->
+<!-- Opción para indicar que ninguna fecha es adecuada -->
+<ion-item>
+  <ion-label>No puedo asistir en ninguna de estas fechas</ion-label>
+  <ion-checkbox slot="start" [checked]="noneOfTheDatesWork" (ionChange)="toggleNoneOfTheDatesWork($event.detail.checked)"></ion-checkbox>
+</ion-item>
   </ion-list>
 
   <!-- Botón de enviar -->
-  <ion-button expand="block" (click)="submitVote()" [disabled]="selectedDates.length === 0">Enviar</ion-button>
+  <ion-button expand="block" (click)="submitVote()" [disabled]="submitButtonDisabled">Enviar</ion-button>
   
   <!-- Mensaje de agradecimiento -->
   <ion-item *ngIf="showThankYouMessage" class="ion-text-center">
     ¡Gracias por tu selección de fechas!
   </ion-item>
+
+
 </ion-content>

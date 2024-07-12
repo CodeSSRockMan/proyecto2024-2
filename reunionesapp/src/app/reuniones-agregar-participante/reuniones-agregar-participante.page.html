@@ -8,20 +8,19 @@
   <div class="question">¿Cómo quieres agregar?</div>
 
   <div class="options-container">
-    <div class="option">
+    <div class="option" (click)="addViaWhatsApp()">
       <ion-icon name="logo-whatsapp"></ion-icon>
       WhatsApp
     </div>
 
-    <div class="option">
+    <div class="option" (click)="addViaContacts()">
       <ion-icon name="book"></ion-icon>
       Contactos
     </div>
 
-    <div class="option center">
+    <div class="option center" (click)="addManually()">
       <ion-icon name="create"></ion-icon>
       Ingreso manual
     </div>
   </div>
 </ion-content>
-

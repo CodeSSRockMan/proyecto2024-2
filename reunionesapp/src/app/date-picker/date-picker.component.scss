@@ -1,69 +1,86 @@
 /* Estilos específicos para el componente DatePickerComponent */
 
 .date-picker-container {
-    font-family: Arial, sans-serif;
-  }
-  
-  .calendar-container {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    padding: 10px;
-  }
-  
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .calendar-header button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5em;
-  }
-  
-  .calendar-body {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-  }
-  
-  .day-cell {
-    text-align: center;
-    padding: 5px;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  
-  .current-month-day {
-    color: #333;
-  }
-  
-  .other-month-day {
-    color: #ccc;
-  }
-  
-  .selected-day {
-    background-color: #007bff; /* Azul */
-    color: #fff; /* Texto en blanco */
-  }
-  .unselectable {
-    opacity: 0.5;
-    pointer-events: none; /* Deshabilita eventos de puntero */
-    background-color: #f0f0f0; /* Cambiar el color de fondo */
-    color: #999; /* Cambiar el color del texto */
-    border-radius: 50%; /* Hacer los días no seleccionables redondos */
-  }
-  
-  .today {
-    background-color: #ffc107; /* Amarillo */
-  }
+  font-family: Arial, sans-serif;
+}
+
+.calendar-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 10px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.calendar-header button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* Asegura que hay 7 columnas */
+}
+
+.day-names {
+  display: contents; /* Alinea los nombres de los días con las celdas */
+}
+
+.day-name {
+  text-align: center;
+  font-weight: bold;
+  padding: 5px 0; /* Asegura un espaciado consistente */
+}
+
+.day-cell {
+  text-align: center;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-sizing: border-box; /* Incluye padding y borde en el tamaño de la celda */
+}
+
+.current-month-day {
+  color: #333;
+}
+
+.other-month-day {
+  color: #ccc;
+}
+
+.selected-day {
+  background-color: #007bff !important; /* Azul */
+  color: #fff; /* Texto en blanco */
+}
+
+.unselectable {
+  opacity: 0.5;
+  pointer-events: none; /* Deshabilita eventos de puntero */
+  background-color: #f0f0f0; /* Cambiar el color de fondo */
+  color: #999; /* Cambiar el color del texto */
+  border-radius: 50%; /* Hacer los días no seleccionables redondos */
+}
+
+.today {
+  background-color: #ffc107 !important; /* Amarillo */
+}
+
+.custom-title {
+  text-align: center;
+  white-space: nowrap !important; /* Evita que el texto se divida en varias líneas */
+  overflow: auto; /* Oculta cualquier parte del texto que no quepa */
+  font-size: calc(1em + 1vw); /* Tamaño de fuente relativo */
+}
+@media screen and (min-width: 360px) {
   .custom-title {
-    text-align: center;
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-    overflow: hidden; /* Oculta cualquier parte del texto que no quepa */
-    font-size: calc(1em + 1vw); /* Tamaño de fuente relativo */
+    font-size: calc(0.8em + 0.8vw); /* Reducir el tamaño de la fuente cuando el contenedor sea más pequeño */
   }
+}

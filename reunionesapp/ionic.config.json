@@ -1,5 +1,7 @@
 {
   "name": "reunionesapp",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

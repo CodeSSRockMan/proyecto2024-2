@@ -13,7 +13,6 @@ import { FormsModule } from '@angular/forms';
 
 import { ReactiveFormsModule } from '@angular/forms';
 
-
 @NgModule({
   declarations: [AppComponent,GuestCodePopoverComponent],
   imports: [BrowserModule, IonicModule.forRoot(),ReactiveFormsModule, AppRoutingModule, FullCalendarModule,FormsModule],
