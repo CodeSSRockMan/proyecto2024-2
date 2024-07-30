@@ -1,5 +1,9 @@
 <ion-header [translucent]="true">
+  
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
     <ion-title>Mis Reuniones</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -21,11 +25,11 @@
         <p class="card-text">{{ reunion.comentarios }}</p>
         <p class="card-text">{{ reunion.ubicacion }}</p>
         <p class="card-text">Estado: {{ reunion.estado }}</p>
-        <p class="card-text" *ngIf="reunion.fechas.length">
+        <p class="card-text" *ngIf="reunion.fechas_reunion.length">
           Fechas:
-          <span *ngFor="let fecha of reunion.fechas; let i = index">
-            {{ fecha | date: 'fullDate' }}
-            <span *ngIf="i < reunion.fechas.length - 1">, </span>
+          <span *ngFor="let fecha of reunion.fechas_reunion; let i = index">
+            {{ fecha.fecha | date: 'fullDate' }}
+            <span *ngIf="i < reunion.fechas_reunion.length - 1">, </span>
           </span>
         </p>
         <div class="scrollable-content">

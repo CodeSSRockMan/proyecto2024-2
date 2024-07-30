@@ -74,22 +74,29 @@ input.form-control {
     white-space: nowrap; /* Evita que el texto se divida en múltiples líneas */
 }
 
-@keyframes moveText {
-    0% {
-      transform: translate(0);
-    }
-    50% {
-      transform: translate(-50px);
-    }
-    100% {
-      transform: translate(0);
-    }
+/* Aplicar fondo y bordes personalizados al ion-card */
+.mensaje-instrucciones {
+    background-color: #f8f9fa; /* Color de fondo claro */
+    border: 1px solid #e0e0e0; /* Borde claro para destacar la tarjeta */
+    margin: 0; /* Eliminar márgenes predeterminados */
+    --box-shadow: none; /* Eliminar sombra para un diseño más limpio */
   }
   
-  
-  .moving-text {
-    animation: moveText 5s infinite;
-    white-space: nowrap; /* Evita que el texto se divida en múltiples líneas */
-    overflow: hidden; /* Oculta el contenido que desborda */
-    text-overflow: clip; /* Recorta el texto cuando se desborda */
+  /* Estilo para el ion-item dentro del ion-card */
+  .mensaje-item {
+    --background: transparent; /* Fondo transparente para que el fondo del ion-card sea visible */
+    border: none; /* Eliminar borde del ion-item */
   }
+  
+  /* Estilo para el texto del mensaje */
+  .mensaje-texto {
+    font-style: italic;
+    color: gray;
+    margin: 0;
+  }
+  
+  /* Estilo para los íconos */
+  .icon-color {
+    color: gray;
+  }
+  

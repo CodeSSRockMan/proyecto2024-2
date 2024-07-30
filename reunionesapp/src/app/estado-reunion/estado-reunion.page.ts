@@ -1,24 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
-
-export interface Participante {
-  nombre: string;
-  telefono: string;
-  confirmado?: boolean;
-  fechasSeleccionadas?: { inicio: Date, fin: Date }[];
-}
-
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  fechas: Date[]; // Convertir las fechas a objetos Date
-  participantes: Participante[];
-  createdByUser: boolean;
-  ubicacion?: string; // Ubicación de la reunión (opcional)
-  tipo?: string; // Tipo de reunión (opcional)
-}
+import { ReunionesService, Reunion, Participante, FechaReunion } from '../services/reuniones.service';
+import { Clipboard } from '@capacitor/clipboard';
 
 @Component({
   selector: 'app-estado-reunion',
@@ -32,63 +16,196 @@ export class EstadoReunionPage implements OnInit {
   sinConfirmar: Participante[] = [];
   fechasSeleccionadas: Date[] = [];
   fechaSeleccionada: Date = new Date();
-  reunion: Reunion = { motivo: '', comentarios: '', estado: '', fechas: [], participantes: [], createdByUser: false };
+  reunion: Reunion | null = null;
+  code: string = '';
 
   mostrarTodas: boolean = true;
   participantes: Participante[] = [];
+  estadosReunion: string[] = ['planificacion', 'coordinacion', 'activa', 'terminada'];
 
   constructor(
     private alertController: AlertController,
     private toastController: ToastController,
     private route: ActivatedRoute,
     private router: Router,
+    private reunionesService: ReunionesService
   ) {}
 
-  formatDate(dateString: string): string {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric'
-    };
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', options);
+  ngOnInit() {
+    // Recuperar la ID de la reunión desde el estado de navegación
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras.state as { reunionId: number };
+
+    if (state?.reunionId) {
+      this.obtenerReunionDetalles(state.reunionId);
+    }
   }
 
-  ngOnInit() {
-    this.route.params.subscribe(params => {
-      if (params['reunion']) {
-        const reunionJson = params['reunion'];
-        console.log('Reunión JSON recibido:', reunionJson); // Log para verificar el JSON recibido
+  getIconForPlatform(platform: string): string {
+    const icons: { [key: string]: string } = {
+      'discord': 'logo-discord',
+      'facebook': 'logo-facebook',
+      'google-meet': 'logo-google',
+      'skype': 'logo-skype',
+      'teams': 'logo-microsoft',
+      'telegram': 'paper-plane-outline',
+      'webex': 'globe-outline',
+      'whatsapp': 'logo-whatsapp',
+      'zoom': 'videocam-outline',
+      'otro': 'create-outline'
+    };
+    return icons[platform] || 'desktop-outline';
+  }
 
-        const reunionObject = JSON.parse(reunionJson);
-        console.log('Reunión objeto antes de convertir fechas:', reunionObject); // Log para verificar el objeto antes de convertir fechas
-
-        // Convertir fechas a objetos Date
-        reunionObject.fechas = reunionObject.fechas.map((fecha: string) => new Date(fecha));
-        console.log('Reunión objeto después de convertir fechas:', reunionObject); // Log para verificar el objeto después de convertir fechas
-
-        this.reunion = reunionObject as Reunion;
+  async obtenerReunionDetalles(id: number) {
+    try {
+      this.reunion = await this.reunionesService.obtenerReunionPorId(id);
+      if (this.reunion) {
+        this.code = this.reunion.codigo_invitacion || '';
         this.procesarReunion(this.reunion);
       } else {
-        console.error('No se encontró la reunión en los parámetros de la ruta.');
-        this.reunion = {
-          motivo: 'Reunión Avance de Trabajo',
-          ubicacion: 'Telemática',
-          comentarios: 'Revisar progreso del informe',
-          estado: 'Coordinacion',
-          fechas: [new Date(2024, 5, 13, 12, 30)], // Cambiado a un arreglo de fechas
-          participantes: [
-            { nombre: 'Pedro', telefono: '123456789' },
-            { nombre: 'Alfonso', telefono: '987654321' }
-          ],
-          createdByUser: true
-        };
-        this.procesarReunion(this.reunion);
+        console.error('No se encontró la reunión con el ID proporcionado.');
       }
+    } catch (error) {
+      console.error('Error al obtener la reunión:', error);
+    }
+  }
+
+  async generateInvitationCode() {
+    if (!this.reunion) {
+      console.error('No hay una reunión definida para generar el código.');
+      return;
+    }
+
+    let isUnique = false;
+
+    while (!isUnique) {
+      // Generar un código de invitación aleatorio
+      this.code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      isUnique = await this.reunionesService.isInvitationCodeUnique(this.code);
+    }
+
+    this.reunion.codigo_invitacion = this.code;
+
+    // Guardar la reunión actualizada con el nuevo código
+    try {
+      await this.reunionesService.updateReunionCode(this.reunion.id, this.code);
+      this.showToast('Código de invitación generado');
+    } catch (error) {
+      console.error('Error al generar el código de invitación:', error);
+      this.showToast('Error al generar el código de invitación');
+    }
+  }
+
+  async copyToClipboard(code: string) {
+    await Clipboard.write({
+      string: code
     });
+    this.showToast('Código de invitación copiado');
+  }
+
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'top'
+    });
+    toast.present();
+  }
+
+// Método para formatear la fecha en la zona horaria local
+// Método para formatear la fecha en la zona horaria local
+// Método para formatear la fecha en la zona horaria local
+formatDate(dateString: string): string {
+  // Asegúrate de que dateString esté en formato ISO y en UTC
+  const date = new Date(dateString);
+
+  date.setHours(date.getHours() + 4);
+
+  // Opciones para mostrar la fecha en formato largo
+  const options: Intl.DateTimeFormatOptions = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric', 
+    timeZone: 'America/Santiago' // Ajusta la zona horaria según sea necesario
+  };
+
+  // Convertir a fecha local en la zona horaria deseada
+  return date.toLocaleDateString('es-ES', options);
+}
+
+// Método para formatear la hora en la zona horaria local
+formatTime(timeString: string): string {
+  // Asegúrate de que timeString esté en formato adecuado y en UTC
+  // Agregar fecha base para la hora
+  const date = new Date(`1970-01-01T${timeString}Z`);
+
+  date.setHours(date.getHours() + 3);
+
+  // Opciones para mostrar la hora en formato de 24 horas
+  const options: Intl.DateTimeFormatOptions = { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    timeZone: 'America/Santiago' // Ajusta la zona horaria según sea necesario
+  };
+
+  // Convertir a hora local en la zona horaria deseada
+  return date.toLocaleTimeString('es-ES', options);
+}
+
+
+  confirmarDetalles() {
+    if (!this.reunion) {
+      console.error('No hay una reunión definida para confirmar los detalles.');
+      return;
+    }
+
+    console.log('Detalles confirmados');
+    this.reunion.estado = 'coordinacion';
+    this.actualizarEstadoReunion();
+  }
+
+  isValidToConfirm(): boolean {
+    if (!this.reunion) {
+      return false; // Si no hay reunión, no se puede confirmar
+    }
+  
+    // Verifica que haya al menos dos participantes confirmados solo si la reunión no está en planificación
+    const tieneSuficientesParticipantes = this.reunion.estado === 'planificacion'
+      ? true // En planificación, no es necesario verificar participantes confirmados
+      : this.confirmadosConFechas.length >= 2;
+    return tieneSuficientesParticipantes;
+  }
+
+  getEstadoColor(estado: string): string {
+    switch (estado) {
+      case 'planificacion':
+        return this.isPlanificacionCumplida() ? 'success' : 'medium';
+      case 'coordinacion':
+        return this.isCoordinacionCumplida() ? 'success' : 'medium';
+      case 'activa':
+        return this.isActivaCumplida() ? 'success' : 'medium';
+      case 'terminada':
+        return this.isTerminadaCumplida() ? 'success' : 'medium';
+      default:
+        return 'medium';
+    }
+  }
+
+  isPlanificacionCumplida(): boolean {
+    return this.reunion?.estado === 'planificacion' || this.reunion?.estado === 'coordinacion' || this.reunion?.estado === 'activa' || this.reunion?.estado === 'terminada';
+  }
+
+  isCoordinacionCumplida(): boolean {
+    return this.reunion?.estado === 'coordinacion' || this.reunion?.estado === 'activa' || this.reunion?.estado === 'terminada';
+  }
+
+  isActivaCumplida(): boolean {
+    return this.reunion?.estado === 'activa' || this.reunion?.estado === 'terminada';
+  }
+
+  isTerminadaCumplida(): boolean {
+    return this.reunion?.estado === 'terminada';
   }
 
   procesarReunion(reunion: Reunion) {
@@ -97,36 +214,51 @@ export class EstadoReunionPage implements OnInit {
       return;
     }
 
-    const data: Participante[] = reunion.participantes;
-    console.log('Datos de participantes:', data); // Log para verificar los datos de participantes
+    // Actualizar totalParticipantes
+    this.totalParticipantes = reunion.participantes.length;
 
-    this.totalParticipantes = data.length;
-
-    this.confirmadosConFechas = data.filter(participante =>
+    // Procesar participantes confirmados con y sin fechas
+    this.confirmadosConFechas = reunion.participantes.filter(participante =>
       participante.confirmado && participante.fechasSeleccionadas && participante.fechasSeleccionadas.length > 0
     );
 
-    this.confirmadosSinOpcion = data.filter(participante =>
+    this.confirmadosSinOpcion = reunion.participantes.filter(participante =>
       participante.confirmado && (!participante.fechasSeleccionadas || participante.fechasSeleccionadas.length === 0)
     );
 
-    this.sinConfirmar = data.filter(participante => !participante.confirmado);
+    this.sinConfirmar = reunion.participantes.filter(participante => !participante.confirmado);
 
-    // Asegurar que todas las fechas de la reunión estén en fechasSeleccionadas
-    this.fechasSeleccionadas = reunion.fechas.map(fecha => new Date(fecha));
-
-    console.log('Fechas seleccionadas:', this.fechasSeleccionadas); // Log para verificar las fechas seleccionadas
+    // Actualizar fechasSeleccionadas
+    this.fechasSeleccionadas = reunion.fechas_reunion.map(fecha => new Date(fecha.fecha));
+    console.log('Fechas seleccionadas:', this.fechasSeleccionadas);
   }
 
   participantesPorFecha(fecha: Date): Participante[] {
     const participantes = this.confirmadosConFechas.filter(participante =>
-      participante.fechasSeleccionadas?.some(f => f.inicio.getTime() === fecha.getTime())
+      participante.fechasSeleccionadas?.some(f => new Date(f.fecha).getTime() === fecha.getTime())
     );
-    console.log(`Participantes para la fecha ${fecha}:`, participantes); // Log para verificar los participantes por fecha
+    console.log(`Participantes para la fecha ${fecha}:`, participantes);
     return participantes;
   }
 
   seleccionarFechaDefinitiva() {
-    console.log('Fecha seleccionada:', this.fechaSeleccionada); // Log para verificar la fecha seleccionada
+    console.log('Fecha seleccionada:', this.fechaSeleccionada);
+    if (this.reunion) {
+      this.reunion.estado = 'activa'; 
+      this.actualizarEstadoReunion();
+    }
+  }
+  
+  async actualizarEstadoReunion() {
+    if (this.reunion) {
+      try {
+        await this.reunionesService.actualizarEstadoReunion(this.reunion.id, this.reunion.estado);
+        this.showToast('Estado de la reunión actualizado a "activa"');
+        console.log('Estado de la reunión actualizado a:', this.reunion.estado);
+      } catch (error) {
+        console.error('Error al actualizar el estado de la reunión:', error);
+        this.showToast('Error al actualizar el estado de la reunión');
+      }
+    }
   }
 }

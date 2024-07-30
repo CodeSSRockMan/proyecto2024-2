@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
     <ion-title>Crear Reunión</ion-title>
   </ion-toolbar>
@@ -20,17 +20,12 @@
     <!-- Additional required wrapper -->
     <div class="swiper-wrapper">
       <!-- Slide 1 -->
-      <div class="swiper-slide slide1" >
+      <div class="swiper-slide slide1">
         <ion-card>
           <ion-card-header>
             <ion-card-title>Datos de la Reunión</ion-card-title>
           </ion-card-header>
           <ion-card-content class="slide1-content">
-            <ion-item lines="none">
-              <ion-icon name="clipboard-outline" slot="start" class="custom-icon"></ion-icon>
-              <ion-label position="stacked">Nombre de la Reunión</ion-label>
-              <ion-input [(ngModel)]="meetingName"></ion-input>
-            </ion-item>
             <ion-item lines="none">
               <ion-icon name="location-outline" slot="start" class="custom-icon"></ion-icon>
               <ion-label position="stacked">Ubicación</ion-label>
@@ -68,61 +63,62 @@
             </ion-item>
             <ion-item lines="none">
               <ion-icon name="document-text-outline" slot="start" class="custom-icon"></ion-icon>
-              <ion-label position="stacked">Motivo</ion-label>
-              <ion-input [(ngModel)]="motivo"></ion-input> <!-- Usar motivo en lugar de reason -->
+              <ion-label position="stacked">Motivo de la reunión</ion-label>
+              <ion-input [(ngModel)]="motivo"></ion-input>
             </ion-item>
             <ion-item lines="none">
               <ion-icon name="chatbox-outline" slot="start" class="custom-icon"></ion-icon>
               <ion-label position="stacked">Comentarios</ion-label>
-              <ion-textarea [(ngModel)]="comentarios"></ion-textarea> <!-- Usar comentarios en lugar de comments -->
+              <ion-textarea [(ngModel)]="comentarios"></ion-textarea>
             </ion-item>
             <ion-toolbar>
-              <ion-button slot="end" [disabled]="!isSlideValid(0)" (click)="completeSlide(0, true)">Siguiente</ion-button>
+              <ion-button slot="end" [disabled]="!isSlideValid(0)" (click)="completeSlide(0)">Siguiente</ion-button>
             </ion-toolbar>
           </ion-card-content>
         </ion-card>
       </div>
 
-    <!-- Slide 2 -->
+      <!-- Slide 2 -->
 <div class="swiper-slide slide2">
   <ion-card>
     <ion-card-content>
       <ion-item style="margin-bottom: 10;">
-        <ion-datetime multiple="true" presentation="date" locale="es-ES" display-format="DD/MM/YYYY" [(ngModel)]="selectedDate" [min]="minDate">
-          <span slot="title">Seleccione la Fecha</span>
+        <ion-datetime multiple="true" presentation="date" locale="es-ES" display-format="DD/MM/YYYY" [(ngModel)]="selectedDates" [min]="minDate">
+          <span slot="title">Seleccione las Fechas</span>
         </ion-datetime>
       </ion-item>
       <ion-item style="margin-bottom: 10;">
         <ion-label>Hora de Inicio</ion-label>
-        <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="HH:mm" picker-format="HH:mm" [(ngModel)]="selectedStartTime" (ionChange)="updateEndTime()"></ion-datetime>
+        <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="h:mm a" picker-format="h:mm a" [(ngModel)]="selectedStartTime" (ionChange)="updateEndTime()"></ion-datetime>
       </ion-item>
       <ion-item style="margin-bottom: 10;">
         <ion-label>Hora de Fin</ion-label>
-        <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="HH:mm" picker-format="HH:mm" [(ngModel)]="selectedEndTime"></ion-datetime>
+        <ion-datetime locale="es-ES" minute-values="0,15,30,45" presentation="time" hour-cycle="h12" display-format="h:mm a" picker-format="h:mm a" [(ngModel)]="selectedEndTime"></ion-datetime>
       </ion-item>
       <ion-button expand="block" (click)="addMeetingDate()" class="custom-button">Añadir</ion-button>
     </ion-card-content>
   </ion-card>
 </div>
+
       <!-- Slide 3 -->
       <div class="swiper-slide">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Fechas Añadidas</ion-card-title>
+            <ion-card-title>Fechas Tentativas</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-card *ngFor="let row of meetingDates; let i = index" class="date-card">
               <ion-card-header>
-                <ion-card-title>{{ formatDate(row[0]) }}</ion-card-title>
+                <ion-card-title>{{ formatDate(row.fecha) }}</ion-card-title>
               </ion-card-header>
               <ion-card-content>
                 <ion-item lines="none" class="time-item">
                   <ion-label>Hora de Inicio:</ion-label>
-                  <ion-text>{{ formatTime(row[1]) }}</ion-text>
+                  <ion-text>{{ formatTime(row.hora_inicio) }}</ion-text>
                 </ion-item>
                 <ion-item lines="none" class="time-item">
                   <ion-label>Hora de Fin:</ion-label>
-                  <ion-text>{{ formatTime(row[2]) }}</ion-text>
+                  <ion-text>{{ formatTime(row.hora_fin) }}</ion-text>
                 </ion-item>
                 <ion-button slot="end" fill="clear" color="danger" (click)="removeMeetingDate(i)">
                   <ion-icon name="trash"></ion-icon>Eliminar
@@ -140,11 +136,10 @@
           </ion-toolbar>
         </ion-footer>
       </div>
- <!-- Paginacion -->
+    </div>
+    <!-- Paginación -->
+    <div class="swiper-pagination-fixed">
+      <div class="swiper-pagination"></div>
+    </div>
   </div>
-  <div class="swiper-pagination-fixed">
-    <div class="swiper-pagination"></div>
-  </div>
-  </div>
-
 </ion-content>

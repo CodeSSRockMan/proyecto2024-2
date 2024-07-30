@@ -1,74 +1,128 @@
 /* Fondo verde claro */
 ion-content {
-    --ion-background-color: #e5ffea !important; /* Color verde claro */
+  --ion-background-color: #e5ffea !important; /* Color verde claro */
 }
 
 /* Color de texto azul */
 ion-label, ion-input, ion-textarea, .ion-text-center a {
-    color: #007bff !important; /* Color azul */
+  color: #007bff !important; /* Color azul */
 }
 
 /* Estilo para el botón de iniciar sesión */
 ion-button {
-    color: #ffffff !important; /* Color de texto blanco */
-    font-weight: bold; /* Añade negrita al texto del botón */
-    font-size: 16px; /* Tamaño de fuente personalizado */
-    padding: 10px 20px; /* Ajusta el espacio dentro del botón */
+  color: #ffffff !important; /* Color de texto blanco */
+  font-weight: bold; /* Añade negrita al texto del botón */
+  font-size: 16px; /* Tamaño de fuente personalizado */
+  padding: 10px 20px; /* Ajusta el espacio dentro del botón */
 }
 
 /* Estilo para los elementos de entrada */
 .input-item {
-    --background: #ffffff; /* Color de fondo blanco */
-    --border-radius: 10px; /* Bordes redondeados */
-    --padding-start: 20px; /* Espacio a la izquierda para el icono */
-    --border: 2px solid #007bff; /* Color de contorno azul */
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+  --background: #ffffff; /* Color de fondo blanco */
+  --border-radius: 10px; /* Bordes redondeados */
+  --padding-start: 20px; /* Espacio a la izquierda para el icono */
+  --border: none; /* Elimina el borde azul */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+  padding: 0; /* Sin padding adicional */
 }
 
 /* Limitar el número de caracteres en los campos de entrada */
 ion-input {
-    --maxlength: 30; /* Límite de caracteres */
+  --maxlength: 30; /* Límite de caracteres */
 }
 
 /* Estilos para el modal */
 .modal-wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 80%; /* Ancho máximo del modal */
-    max-height: 80%; /* Altura máxima del modal */
-  }
-  
-  .modal-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px; /* Ajusta el espacio alrededor del contenido */
-  }
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80%; /* Ancho máximo del modal */
+  max-height: 80%; /* Altura máxima del modal */
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px; /* Ajusta el espacio alrededor del contenido */
+}
+
 /* Estilos para el modal */
 .guest-code-modal {
-    --width: 80%; /* Ancho del modal */
-    --height: 60%; /* Altura del modal */
-    --border-radius: 10px; /* Bordes redondeados del modal */
-    --background: #fff; /* Color de fondo del modal */
-    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra del modal */
-    --position: absolute; /* Posición absoluta del modal */
-    --top: 20%; /* Distancia desde la parte superior */
-    --left: 10%; /* Distancia desde la izquierda */
+  --width: 80%; /* Ancho del modal */
+  --height: 60%; /* Altura del modal */
+  --border-radius: 10px; /* Bordes redondeados del modal */
+  --background: #fff; /* Color de fondo del modal */
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra del modal */
+  --position: absolute; /* Posición absoluta del modal */
+  --top: 20%; /* Distancia desde la parte superior */
+  --left: 10%; /* Distancia desde la izquierda */
+}
+
+/* Estilo personalizado para el toast */
+.custom-toast {
+  .toast-wrapper {
+    width: 80vw; /* Ancho del toast */
+    max-width: 300px; /* Ancho máximo del toast */
+    min-height: 100px; /* Altura mínima del toast */
   }
 
-  /* Estilo personalizado para el toast */
-.custom-toast {
-    .toast-wrapper {
-      width: 80vw; /* Ancho del toast */
-      max-width: 300px; /* Ancho máximo del toast */
-      min-height: 100px; /* Altura mínima del toast */
-    }
-  
-    .toast-message {
-      white-space: normal; /* Permite el ajuste de línea */
-      padding: 10px; /* Espacio alrededor del mensaje */
-    }
+  .toast-message {
+    white-space: normal; /* Permite el ajuste de línea */
+    padding: 10px; /* Espacio alrededor del mensaje */
   }
-  
+}
+
+/* Estilo para el item de teléfono */
+.phone-item {
+  --background: transparent; /* Fondo transparente para el item */
+  --border: none; /* Eliminar el borde del item */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  --padding-start: 0;
+}
+
+/* Estilo para el contenedor del teléfono */
+.phone-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #ffffff; /* Fondo blanco para el contenedor */
+  border-radius: 10px; /* Bordes redondeados para el contenedor */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombreado */
+  position: 1; /* Posición relativa para el z-index */
+
+  /* Estilo para el código de país */
+  .country-code {
+    color: #007bff; /* Color del texto del código de país */
+    padding: 10px;
+    background: #ffffff; /* Fondo blanco para el código de país */
+    border-top-left-radius: 10px; /* Bordes redondeados */
+    border-bottom-left-radius: 10px; /* Bordes redondeados */
+    z-index: 2;
+  }
+  .phone-code {
+    flex: 0 0 auto; /* No crecer ni reducir */
+  }
+
+  /* Estilo para el input del teléfono */
+  ion-input {
+    flex: 1;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding-left: 10px; /* Espacio a la izquierda para el texto */
+    --background: #ffffff; /* Fondo blanco para el input */
+    --border: none; /* Eliminar el borde del input */
+    z-index: 1;
+  }
+}
+
+/* Estilo para el label del teléfono */
+ion-label.position-stacked {
+  color: #007bff; /* Color del texto del label */
+  background: #ffffff; /* Fondo blanco para el label */
+  padding: 5px 10px; /* Espacio alrededor del texto */
+  border-radius: 5px; /* Bordes redondeados */
+  margin-bottom: 0; /* Elimina el margen inferior para alinear con el contenedor */
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Sombreado para el label */
+}

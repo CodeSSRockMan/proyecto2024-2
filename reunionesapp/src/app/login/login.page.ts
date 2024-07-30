@@ -1,15 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalController, ToastController } from '@ionic/angular';
-import { GuestCodeModalComponent } from '../guest-code-modal/guest-code-modal.component';
 import { PopoverController } from '@ionic/angular';
 import { GuestCodePopoverComponent } from '../guest-code-popover/guest-code-popover.component';
 import { OverlayEventDetail } from '@ionic/core';
-
-
-interface ToastData {
-  value: string; // Supongamos que 'value' es el nombre de la propiedad que contiene el código de invitación
-}
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -17,27 +12,56 @@ interface ToastData {
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
-  
-  correoElectronico: string='';
-  contrasena: string='';
-  mostrarModal: boolean = false; // Definir la propiedad mostrarModal
-  constructor(private router: Router,private popoverController: PopoverController, private modalController: ModalController,private toastController: ToastController) { }
 
-  iniciarSesion() {
-    // Aquí puedes agregar la lógica para iniciar sesión con el correo electrónico y la contraseña
-    console.log('Iniciar sesión con correo electrónico:', this.correoElectronico, 'y contraseña:', this.contrasena);
+  correoElectronico: string = '';
+  contrasena: string = '';
+  mostrarModal: boolean = false;
 
-    // Después de iniciar sesión, puedes redirigir a la página de inicio o a otra página necesaria
-    this.router.navigate(['/home']);
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private popoverController: PopoverController,
+    private modalController: ModalController,
+    private toastController: ToastController
+  ) { }
+
+  async iniciarSesion() {
+    try {
+      // Iniciar sesión con Supabase
+      await this.authService.signIn(this.correoElectronico, this.contrasena);
+      
+      // Obtener datos adicionales del usuario
+      const user = await this.authService.getUserDetails();
+      
+      // Redirigir al usuario a la página de inicio
+      this.router.navigate(['/home']);
+      
+      // Mostrar un mensaje de éxito
+      const toast = await this.toastController.create({
+        message: 'Inicio de sesión exitoso.',
+        duration: 2000,
+        position: 'bottom'
+      });
+      toast.present();
+    } catch (error: unknown) {
+      let errorMessage = 'Error desconocido';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      const toast = await this.toastController.create({
+        message: `Error al iniciar sesión: ${errorMessage}`,
+        duration: 2000,
+        position: 'bottom'
+      });
+      toast.present();
+    }
   }
 
   async registrarse() {
-    // Aquí puedes agregar la lógica para abrir la página de registro en un modal o como una página nueva
-    // En este ejemplo, se abrirá en una página nueva (navegación normal)
     await this.router.navigate(['/register']);
   }
 
-  async ingresarCodigoInvitado() { //THIS ONE!!!!
+  async ingresarCodigoInvitado() {
     const popover = await this.popoverController.create({
       component: GuestCodePopoverComponent,
       translucent: true
@@ -47,13 +71,13 @@ export class LoginPage implements OnInit {
       const codigoInvitacion = data.data;
       if (codigoInvitacion) {
         console.log('Código de invitación recibido:', codigoInvitacion);
-        this.router.navigate(['/register-guest']); // Puedes realizar otras acciones aquí, como navegar a otra página
+        this.router.navigate(['/register-guest']);
       }
     });
 
     return await popover.present();
   }
-  
+
   async onPopoverClosed(codigoInvitacion: string) {
     if (codigoInvitacion) {
       console.log('Código de invitación recibido:', codigoInvitacion);
@@ -63,24 +87,21 @@ export class LoginPage implements OnInit {
     }
   }
 
-  
-  async onModalDismissed(event: CustomEvent<OverlayEventDetail<any>>) { //THIS ONE NOT?
+  async onModalDismissed(event: CustomEvent<OverlayEventDetail<any>>) {
     const data: string = event.detail.data;
     console.log('Datos recibidos:', data);
     await this.router.navigate(['/register-guest']);
-    // Aquí puedes realizar cualquier lógica basada en el valor de 'data'
   }
 
- async onCodeSubmitted(code: string) {
+  async onCodeSubmitted(code: string) {
     console.log('Código de invitado recibido:', code);
     await this.router.navigate(['/register-guest']);
-    // Aquí puedes agregar lógica adicional para manejar el código de invitado
   }
+
   async closeModal() {
-    await this.modalController.dismiss(); // Cerrar el modal
+    await this.modalController.dismiss();
   }
 
   ngOnInit() {
   }
-
 }

@@ -1,24 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  fechas: Date[];
-  participantes: Participante[];
-  createdByUser: boolean;
-}
-interface Participante {
-  nombre: string;
-  telefono: string;
-}
-
-enum EstadoReunion {
-  Planificacion = 'Planificacion',
-  Coordinacion = 'Coordinacion',
-  Activa = 'Activa',
-  Finalizada = 'Finalizada'
-}
+import { FechaReunion, Reunion } from '../services/reuniones.service'; // Asegúrate de importar desde el servicio correcto
 
 @Component({
   selector: 'app-date-picker',
@@ -26,7 +7,7 @@ enum EstadoReunion {
   styleUrls: ['./date-picker.component.scss'],
 })
 export class DatePickerComponent implements OnInit {
-  @Input() upcomingActivityDates: Date[] = [];
+  @Input() upcomingActivityDates: FechaReunion[] = [];
   @Input() allowSelection: boolean = true;
   @Input() reuniones: Reunion[] = [];
   selectedDates: string[] = [];
@@ -34,23 +15,26 @@ export class DatePickerComponent implements OnInit {
   currentMonth: string = '';
   selectedDateFormatted: string = '';
   days: any[] = [];
-  fechasNormalizadas: string[] = [];
 
   constructor() { }
 
   ngOnInit() {
+    console.log(this.reuniones);
     if (this.reuniones && this.reuniones.length > 0) {
       this.selectedDates = this.reuniones.reduce((dates: string[], reunion: Reunion) => {
-        return dates.concat(reunion.fechas.map(date => this.normalizeDate(date)));
+        return dates.concat(reunion.fechas_reunion.map(date => this.normalizeDate(date)));
       }, []);
     } else if (this.upcomingActivityDates && this.upcomingActivityDates.length > 0) {
       this.selectedDates = this.upcomingActivityDates.map(date => this.normalizeDate(date));
-      console.log('Fechas recibidas:', this.upcomingActivityDates);
     } else {
       const today = new Date();
-      const normalizedToday = this.normalizeDate(today);
+      const normalizedToday = this.normalizeDate({
+        id:0,
+        fecha: today.toISOString().split('T')[0],
+        hora_inicio: '00:00:00',
+        hora_fin: '23:59:59'
+      });
       this.selectedDates.push(normalizedToday);
-      console.log('Fecha actual:', normalizedToday);
     }
     this.updateCalendar();
     this.updateSelectedDateFormatted();
@@ -62,7 +46,7 @@ export class DatePickerComponent implements OnInit {
   }
 
   removeCurrentDateFromSelectedDates() {
-    const currentDateISO = new Date().toISOString();
+    const currentDateISO = new Date().toISOString().split('T')[0];
     this.selectedDates = this.selectedDates.filter(date => date !== currentDateISO);
   }
 
@@ -82,7 +66,12 @@ export class DatePickerComponent implements OnInit {
       let daysToAdd = firstDayOfWeekIndex === 0 ? 6 : firstDayOfWeekIndex - 1;
       for (let i = prevMonthLastDay - daysToAdd; i <= prevMonthLastDay; i++) {
         const prevMonthDate = new Date(year, month - 1, i);
-        const normalizedPrevMonthDate = this.normalizeDate(prevMonthDate);
+        const normalizedPrevMonthDate = this.normalizeDate({
+          id:0,
+          fecha: prevMonthDate.toISOString().split('T')[0],
+          hora_inicio: '00:00:00',
+          hora_fin: '23:59:59'
+        });
         const isSelected = this.selectedDates.includes(normalizedPrevMonthDate);
         days.push({
           day: i,
@@ -97,7 +86,12 @@ export class DatePickerComponent implements OnInit {
 
     for (let i = 1; i <= numDaysInMonth; i++) {
       const currentMonthDate = new Date(year, month, i);
-      const normalizedCurrentMonthDate = this.normalizeDate(currentMonthDate);
+      const normalizedCurrentMonthDate = this.normalizeDate({
+        id:0,
+        fecha: currentMonthDate.toISOString().split('T')[0],
+        hora_inicio: '00:00:00',
+        hora_fin: '23:59:59'
+      });
       const isSelected = this.selectedDates.includes(normalizedCurrentMonthDate);
       days.push({
         day: i,
@@ -116,7 +110,12 @@ export class DatePickerComponent implements OnInit {
       const daysToAdd = 7 - days.length % 7;
       for (let i = 1; i <= daysToAdd; i++) {
         const nextMonthDate = new Date(year, month + 1, i);
-        const normalizedNextMonthDate = this.normalizeDate(nextMonthDate);
+        const normalizedNextMonthDate = this.normalizeDate({
+          id:0,
+          fecha: nextMonthDate.toISOString().split('T')[0],
+          hora_inicio: '00:00:00',
+          hora_fin: '23:59:59'
+        });
         const isSelected = this.selectedDates.includes(normalizedNextMonthDate);
         days.push({
           day: i,
@@ -132,17 +131,9 @@ export class DatePickerComponent implements OnInit {
     return days;
   }
 
-  normalizeDate(dateOrDates: Date | Date[]): string {
-    if (Array.isArray(dateOrDates)) {
-      const fechaParte1 = dateOrDates[0].toISOString().split('T')[0]; // Obtiene año-mes-día de la primera fecha
-      const fechaParte2 = dateOrDates[1]?.toISOString().split('T')[1] || '00:00:00.000Z'; // Obtiene hora-minuto-segundo de la segunda fecha o asigna valor por defecto
-      return `${fechaParte1}T${fechaParte2}`;
-    } else {
-      console.log(dateOrDates);
-      return dateOrDates.toISOString().split('T')[0]; // Retorna año-mes-día si es una fecha individual
-    }
+  normalizeDate(date: FechaReunion): string {
+    return `${date.fecha}T${date.hora_inicio}`;
   }
-  
 
   toggleCalendar() {
     this.showCalendar = !this.showCalendar;
@@ -184,16 +175,24 @@ export class DatePickerComponent implements OnInit {
   prevMonth() {
     const firstDayOfMonth = new Date(this.selectedDates[0]);
     firstDayOfMonth.setMonth(firstDayOfMonth.getMonth() - 1);
-    this.selectedDates[0] = firstDayOfMonth.toISOString().split('T')[0];
-    console.log('Fecha seleccionada después de retroceder un mes:', this.selectedDates);
+    this.selectedDates[0] = this.normalizeDate({
+      id:0,
+      fecha: firstDayOfMonth.toISOString().split('T')[0],
+      hora_inicio: '00:00:00',
+      hora_fin: '23:59:59'
+    });
     this.updateCalendar();
   }
 
   nextMonth() {
     const firstDayOfMonth = new Date(this.selectedDates[0]);
     firstDayOfMonth.setMonth(firstDayOfMonth.getMonth() + 1);
-    this.selectedDates[0] = firstDayOfMonth.toISOString().split('T')[0];
-    console.log('Fecha seleccionada después de avanzar un mes:', this.selectedDates);
+    this.selectedDates[0] = this.normalizeDate({
+      id:0,
+      fecha: firstDayOfMonth.toISOString().split('T')[0],
+      hora_inicio: '00:00:00',
+      hora_fin: '23:59:59'
+    });
     this.updateCalendar();
   }
 
@@ -211,70 +210,14 @@ export class DatePickerComponent implements OnInit {
     return false;
   }
 
-  isSameDay(date1: Date, date2: Date): boolean {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
-    );
-  }
-
   isToday(date: string): boolean {
-    const today = new Date();
-    const selectedDate = new Date(date);
-    const normalizedToday = this.normalizeDate(today);
-    const normalizedSelectedDate = this.normalizeDate(selectedDate);
-    
-    console.log('Fecha actual normalizada:', normalizedToday);
-    console.log('Fecha seleccionada normalizada:', normalizedSelectedDate);
-  
-    return normalizedToday === normalizedSelectedDate;
+    const today = new Date().toISOString().split('T')[0];
+    return date === today;
   }
-
-  selectable(day: any): boolean {
-    const selectedDate = new Date(day.date);
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const selectedMonth = selectedDate.getMonth();
-    const selectedYear = selectedDate.getFullYear();
-  
-    if (selectedMonth === currentMonth && selectedYear === currentYear) {
-      return this.selectedDates.some(date => this.isSameDay(new Date(date), selectedDate));
-    } else {
-      return false;
+  capitalizeFirstLetter(text: string): string {
+    if (text && text.length > 0) {
+      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     }
-  }
-
-  capitalizeFirstLetter(word: string): string {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  }
-
-  calculateTimeLeft(meeting: Reunion): string {
-    const now = new Date();
-    let closestTimeDifference = Infinity;
-
-    for (const date of meeting.fechas) {
-      const timeDifference = date.getTime() - now.getTime();
-      if (timeDifference >= 0 && timeDifference < closestTimeDifference) {
-        closestTimeDifference = timeDifference;
-      }
-    }
-
-    const daysLeft = Math.floor(closestTimeDifference / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.floor((closestTimeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutesLeft = Math.floor((closestTimeDifference % (1000 * 60 * 60)) / (1000 * 60));
-
-    let timeLeftMessage = "";
-    if (daysLeft > 0) {
-      timeLeftMessage += `${daysLeft} día${daysLeft > 1 ? "s" : ""}`;
-    }
-    if (hoursLeft > 0) {
-      timeLeftMessage += ` ${hoursLeft} hora${hoursLeft > 1 ? "s" : ""}`;
-    }
-    if (minutesLeft > 0) {
-      timeLeftMessage += ` ${minutesLeft} minuto${minutesLeft > 1 ? "s" : ""}`;
-    }
-
-    return timeLeftMessage.trim() || "Hoy";
+    return '';
   }
 }

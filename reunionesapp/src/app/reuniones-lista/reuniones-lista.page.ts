@@ -1,22 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  fechas: any[]; // Se mantiene igual, asumiendo que ya contiene la información de fecha y hora
-  participantes: Participante[];
-  createdByUser: boolean;
-  ubicacion?: string; // Ubicación de la reunión (opcional)
-  tipo?: string; // Tipo de reunión (opcional)
-}
-
-export interface Participante {
-  nombre: string;
-  telefono: string;
-  fechasElegidas?: boolean;
-}
+import { ReunionesService } from '../services/reuniones.service';
+import { Reunion, FechaReunion, Participante } from '../services/reuniones.service';
 
 @Component({
   selector: 'app-reuniones-lista',
@@ -28,55 +13,17 @@ export class ReunionesListaPage implements OnInit {
   reunionesFiltradas: Reunion[] = [];
   mostrarFinalizadas = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,private reunionesService: ReunionesService) {}
 
-  ngOnInit() {
-    
-    this.obtenerReuniones(); // Obtener las reuniones al iniciar el componente
+  async ngOnInit() {
+    try {
+      this.reuniones = await this.reunionesService.obtenerReuniones();
+      this.reunionesFiltradas = this.ordenarReuniones(this.reuniones); // Inicializar reunionesFiltradas con todas las reuniones
+    } catch (error) {
+      console.error('Error al obtener reuniones:', error);
+    }
   }
 
-  obtenerReuniones() {
-    this.reuniones = [
-      {
-        motivo: 'Reunión Avance de Trabajo',
-        ubicacion: 'Telemática',
-        comentarios: 'Revisar progreso del informe',
-        estado: 'Coordinacion',
-        fechas: [new Date(2024, 5, 13, 12, 30)], // Cambiado a un arreglo de fechas
-        participantes: [
-          { nombre: 'Pedro', telefono: '123456789' },
-          { nombre: 'Alfonso', telefono: '987654321' },
-        ],
-        createdByUser: true,
-      },
-      {
-        motivo: 'Reunión Proyecto de Título',
-        ubicacion: 'Universidad del Bío-Bío',
-        comentarios: 'revisar el progreso de la aplicación',
-        estado: 'Programada', // Corregido el estado
-        fechas: [new Date(2024, 5, 21, 12)], // Cambiado a un arreglo de fechas
-        participantes: [
-          { nombre: 'Pedro', telefono: '123456789' },
-          { nombre: 'Alfonso', telefono: '987654321' },
-        ],
-        createdByUser: true,
-      },
-      {
-        motivo: 'Reunión Finalizada Ejemplo',
-        ubicacion: 'Oficina',
-        comentarios: 'Ejemplo de reunión finalizada',
-        estado: 'Finalizada',
-        fechas: [new Date(2024, 5, 25, 10, 0)],
-        participantes: [
-          { nombre: 'Laura', telefono: '555555555' },
-          { nombre: 'Carlos', telefono: '666666666' },
-        ],
-        createdByUser: true,
-      },
-    ];
-
-    this.reunionesFiltradas = this.ordenarReuniones(this.reuniones); // Inicializar reunionesFiltradas con todas las reuniones
-  }
 
   ordenarReuniones(reuniones: Reunion[]): Reunion[] {
     const ordenEstado = ['planificacion', 'coordinacion', 'programada', 'finalizada'];
@@ -105,7 +52,7 @@ export class ReunionesListaPage implements OnInit {
   }
 
   verDetalles(reunion: Reunion) {
-    console.log('Reunión seleccionada:', reunion);
-    this.router.navigate(['/estado-reunion', { reunion: JSON.stringify(reunion) }]);
+    // Navegar a la página de estado-reunion y pasar solo la ID de la reunión como estado
+    this.router.navigate(['/estado-reunion'], { state: { reunionId: reunion.id } });
   }
 }

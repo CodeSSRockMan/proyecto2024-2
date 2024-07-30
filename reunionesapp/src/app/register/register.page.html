@@ -4,6 +4,7 @@
     <p>Crea una nueva cuenta</p>
   </div>
 
+  <!-- Nombre de usuario -->
   <ion-item lines="none" class="input-item">
     <ion-label position="stacked">
       <ion-icon name="person"></ion-icon> Nombre de usuario
@@ -12,6 +13,7 @@
   </ion-item>
   <br>
 
+  <!-- Correo Electrónico -->
   <ion-item lines="none" class="input-item">
     <ion-label position="stacked">
       <ion-icon name="mail"></ion-icon> Correo Electrónico
@@ -19,13 +21,36 @@
     <ion-input type="email" [(ngModel)]="correoElectronico" clearInput="true" maxlength="30"></ion-input>
   </ion-item>
   <br>
-  <ion-item lines="none" class="input-item">
-    <ion-label position="stacked">
+
+<!-- Teléfono con código de país -->
+<ion-item lines="none" class="input-item">
+  <!-- Primera fila: Contiene el label apilado -->
+  <div class="label-container">
+    <ion-label position="stacked" class="phone-label">
       <ion-icon name="call"></ion-icon> Teléfono
     </ion-label>
-    <ion-input type="tel" [(ngModel)]="telefono" clearInput="true" maxlength="30"></ion-input>
-  </ion-item>
+  </div>
+  
+  <!-- Segunda fila: Contenedor horizontal para el código de país y el input -->
+  <div class="phone-content" style="display: flex; align-items: center; width: 100%; margin-top: 5px;">
+    <div class="phone-code" style="flex: 0 0 auto;">
+      <div class="country-code" style="display: flex; align-items: center; padding: 10px; background: #ffffff; border-top-left-radius: 10px; border-bottom-left-radius: 10px; color: #007bff;">
+        +56
+      </div>
+    </div>
+    <div class="phone-input" style="flex: 1; display: flex; align-items: center;">
+      <ion-input type="text" [(ngModel)]="telefono" clearInput="true" maxlength="9" inputMode="numeric" style="border-top-right-radius: 10px; border-bottom-right-radius: 10px; padding-left: 10px; --background: #ffffff; --border: none; height: 100%; box-sizing: border-box;"></ion-input>
+    </div>
+  </div>
+</ion-item>
+
+
+
+
+
   <br>
+
+  <!-- Contraseña -->
   <ion-item lines="none" class="input-item">
     <ion-label position="stacked">
       <ion-icon name="lock-closed"></ion-icon> Contraseña
@@ -33,6 +58,7 @@
     <ion-input type="password" [(ngModel)]="contrasena" clearInput="true" maxlength="30"></ion-input>
   </ion-item>
   <br>
+
   <ion-button expand="block" (click)="registrar()">Registrar</ion-button>
   <br>
   <div class="ion-text-center ion-margin-top">

@@ -1,81 +1,106 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    <!-- Botón para volver a la pantalla anterior -->
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
     <ion-title>Participantes</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-<ion-content [fullscreen]="true" (ionScroll)="onScroll($event)">
+<ion-content [fullscreen]="true" (ionScroll)="onScroll($event)" #content>
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Participantes</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div class="container mt-3">
-    <div *ngFor="let participante of participantes" class="card mb-3" [class.sin-fechas]="!participante.fechasElegidas" [class.con-fechas]="participante.fechasElegidas" style="position: relative;">
-      <div class="card-body d-flex justify-content-between align-items-center" style="height: 70px;margin-bottom: 5px; overflow: hidden;">
-        <!-- Ícono de alerta si no ha elegido fechas -->
-        <ion-icon *ngIf="!participante.fechasElegidas" name="alert-circle" class="text-danger mr-2"></ion-icon>
-        <!-- Ícono de confirmación si ha elegido fechas y no está en modo de edición -->
-        <ion-icon *ngIf="participante.fechasElegidas && !participante.editando" name="checkmark-circle" class="text-success mr-2"></ion-icon>
+  <div class="container mt-2">
+    <!-- Mensaje si no hay participantes -->
+    <div *ngIf="participantes.length === 0" class="alert alert-info text-center">
+      No has invitado a nadie. Haz clic en el ícono de abajo a la derecha para añadir uno nuevo.
+    </div>
 
-        <!-- Primera división horizontal -->
-        <div class="d-flex align-items-center w-75">
-          <!-- División horizontal para nombre y botón de editar -->
-          <div class="d-flex align-items-center">
-            <!-- Campo de nombre o edición -->
-            <ng-container *ngIf="!participante.editando; else editingMode">
-              <h5 *ngIf="!participante.editando" class="card-title mb-0 mr-1 fixed-width-nombre moving-text" [class.edicion]="participante.editando">{{ participante.nombre }}</h5>
+    <ion-list>
+      <!-- Mensaje informativo con opción para cerrar -->
+<ion-card *ngIf="mostrarMensajeInstrucciones" class="mensaje-instrucciones">
+  <ion-card-content>
+    <ion-item class="mensaje-item">
+      <ion-icon name="arrow-back-outline" slot="start" class="icon-color"></ion-icon>
+      <ion-label>
+        <p class="mensaje-texto">
+          Desliza a la izquierda en el participante para ver opciones
+        </p>
+      </ion-label>
+      <ion-icon name="close-outline" slot="end" (click)="cerrarMensaje()" class="icon-color"></ion-icon>
+    </ion-item>
+  </ion-card-content>
+</ion-card>
+
+
+      <ion-item-sliding *ngFor="let participante of participantes; let i = index">
+        <!-- Deslizar el ítem -->
+        <ion-item>
+          <ion-icon *ngIf="!(participante.usuario_id === getCurrentUserId()) && (!participante.fechasSeleccionadas || participante.fechasSeleccionadas.length === 0)"
+                    name="alert-circle" class="text-danger mr-2"></ion-icon>
+          <ion-icon *ngIf="participante.usuario_id === getCurrentUserId()|| (participante.fechasSeleccionadas && participante.fechasSeleccionadas.length > 0 && !editando[i])"
+                    name="checkmark-circle" class="text-success mr-2"></ion-icon>
+
+          <ion-label>
+
+            <ion-avatar aria-hidden="true" slot="start">
+              <img alt="" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+            </ion-avatar>
+            <ng-container *ngIf="!editando[i]; else editingMode">
+              <h5 class="card-title mb-0 mr-1" style="font-size: 14px;">
+                {{ participante.nombre }}
+                <span *ngIf="participante.usuario_id && isCurrentUser(participante.usuario_id)" class="badge badge-primary">Tú</span>
+              </h5>
             </ng-container>
             <ng-template #editingMode>
               <input type="text" class="custom-input fixed-width" [(ngModel)]="participante.nombre">
             </ng-template>
 
-            <!-- Botón de editar -->
-            <button *ngIf="!participante.editando" type="button" class="btn btn-link p-0" style="margin-top: -5px;" (click)="toggleEdicion(participante)">
-              <ion-icon name="create-outline"></ion-icon>
-            </button>
-          </div>
-        </div>
-        
-        <!-- Segunda división horizontal - Teléfono y botones de acción -->
-        <div class="d-flex align-items-center justify-content-end w-25">
-          <!-- División vertical para teléfono -->
-          <div class="d-flex flex-column ml-3">
-            <!-- Campo de teléfono -->
-            <p *ngIf="!participante.editando" class="card-text mb-0 font-weight-bold" [class.edicion]="participante.editando">{{ participante.telefono }}</p>
-            <input *ngIf="participante.editando" type="text" class="custom-input fixed-width-telefono" [(ngModel)]="participante.telefono">
-            
-            <!-- Botones de acción -->
-            <div class="btn-group mt-2" role="group" aria-label="Acciones">
-              <button type="button" class="btn btn-outline-primary" (click)="llamar(participante.telefono)">
-                <ion-icon name="call-outline"></ion-icon>
-              </button>
-              <button type="button" class="btn btn-outline-success" (click)="enviarWhatsapp(participante.telefono)">
-                <ion-icon name="logo-whatsapp"></ion-icon>
-              </button>
-              <button type="button" class="btn btn-outline-danger" (click)="confirmarEliminacion(participante)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </button>
-              <!-- Botón de guardar cambios -->
-              <button *ngIf="participante.editando" type="button" class="btn btn-outline-primary" (click)="confirmarEdicion(participante)">
-                <ion-icon name="save-outline"></ion-icon>
-              </button>
-            </div>
-          </div>
-        </div>
+            <p *ngIf="!editando[i]" class="card-text mb-0 font-weight-bold">{{ participante.telefono }}</p>
+            <input *ngIf="editando[i]" type="text" class="custom-input fixed-width-telefono"
+                   [(ngModel)]="participante.telefono">
+          </ion-label>
+        </ion-item>
 
-      </div>
-    </div>
+        <!-- Opciones de acción para deslizar hacia la izquierda -->
+<ion-item-options side="end">
+  <!-- Opción para enviar WhatsApp, visible solo si el usuario no es el creador -->
+  <ion-item-option color="success" *ngIf="participante.usuario_id !== getCurrentUserId()" (click)="enviarWhatsapp(participante.telefono)">
+    <ion-icon name="logo-whatsapp"></ion-icon>
+    WhatsApp
+  </ion-item-option>
+
+  <!-- Opción para eliminar, visible solo si el usuario no es el creador -->
+  <ion-item-option color="danger" *ngIf="participante.usuario_id !== getCurrentUserId()" (click)="confirmarEliminacion(i)">
+    <ion-icon name="trash-outline"></ion-icon>
+    Eliminar
+  </ion-item-option>
+
+  <!-- Opción informativa, visible solo para el creador -->
+  <ion-item-option color="medium" *ngIf="participante.usuario_id === getCurrentUserId()">
+    <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+    <ion-label>
+      <p style="font-size: 12px; color: #000; margin: 0; background-color: #e0e0e0; padding: 4px; border-radius: 4px;">
+        Acción no disponible
+      </p>
+    </ion-label>
+  </ion-item-option>
+</ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+
+    <!-- Botón para añadir nuevo participante -->
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="agregarParticipante()">
+        <ion-icon name="person-add-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </div>
-
-  <!-- Botón para añadir nuevo participante -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="agregarParticipante()">
-      <ion-icon name="person-add-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
-
 </ion-content>

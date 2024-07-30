@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { AuthService } from '../services/auth.service';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-register',
@@ -8,30 +10,59 @@ import { NavController } from '@ionic/angular';
 })
 export class RegisterPage implements OnInit {
 
-  nombreUsuario: string='';
-  correoElectronico: string='';
-  telefono: string='';
-  contrasena: string='';
+  nombreUsuario: string = '';
+  correoElectronico: string = '';
+  telefono: string = '';
+  contrasena: string = '';
 
-  registrar() {
-    // Aquí puedes implementar la lógica para enviar los datos del registro al servidor
-    console.log('Nombre de usuario:', this.nombreUsuario);
-    console.log('Correo electrónico:', this.correoElectronico);
-    console.log('Teléfono:', this.telefono);
-    console.log('Contraseña:', this.contrasena);
+  constructor(
+    private navCtrl: NavController,
+    private authService: AuthService,
+    private toastController: ToastController
+  ) {}
 
-    // Redireccionar a la página de inicio de sesión después del registro exitoso
-    this.navCtrl.navigateForward('/login');
+  ngOnInit() {}
+
+  async registrar() {
+    // Validación del número de teléfono
+    if (!this.validarTelefono(this.telefono)) {
+      await this.mostrarToast('El número de teléfono debe tener 9 dígitos.');
+      return;
+    }
+
+    const telefonoConCodigo = `+56${this.telefono.replace(/\D/g, '')}`;
+
+    try {
+      await this.authService.register(this.correoElectronico, this.contrasena, this.nombreUsuario, telefonoConCodigo);
+      await this.mostrarToast('Registro exitoso.');
+      // Redirigir al usuario a la página de inicio de sesión
+      this.irAInicioSesion();
+    } catch (error: unknown) {
+      let errorMessage = 'Error desconocido';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      await this.mostrarToast(`Error al registrar: ${errorMessage}`);
+    }
   }
 
-  constructor(private navCtrl: NavController) {}
+  validarTelefono(telefono: string): boolean {
+    // Verifica que el número de teléfono tenga exactamente 9 dígitos
+    const telefonoLimpio = telefono.replace(/\D/g, ''); // Elimina caracteres no numéricos
+    return telefonoLimpio.length === 9;
+  }
 
-  ngOnInit() {
+  async mostrarToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom'
+    });
+    toast.present();
   }
 
   irAInicioSesion() {
     // Redireccionar a la página de inicio de sesión
     this.navCtrl.navigateForward('/login');
   }
-
 }

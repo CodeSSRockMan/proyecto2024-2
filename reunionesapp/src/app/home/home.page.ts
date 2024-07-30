@@ -1,21 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { ReunionesService, Reunion, Participante, FechaReunion } from '../services/reuniones.service';
 
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  fechas: Date[]; // Se mantiene igual, asumiendo que ya contiene la información de fecha y hora
-  participantes: Participante[];
-  createdByUser: boolean;
-  ubicacion?: string; // Ubicación de la reunión (opcional)
-  tipo?: string; // Tipo de reunión (opcional)
-}
-
-interface Participante {
-  nombre: string;
-  telefono: string;
-}
 
 @Component({
   selector: 'app-home',
@@ -30,7 +17,8 @@ export class HomePage implements OnInit {
 
   noActivitiesCreatedByUser: boolean = false;
   noActivitiesParticipant: boolean = false;
-  reuniones: Reunion[] = [
+  reuniones: Reunion[] = [];
+  /* reuniones: Reunion[] = [
     {
       motivo: 'Reunión Avance de Trabajo',
       ubicacion: 'Telemática',
@@ -55,28 +43,41 @@ export class HomePage implements OnInit {
       ],
       createdByUser: true
     }
-  ];
+  ]; */
+  getIconForPlatform(platform: string): string {
+    const icons: { [key: string]: string } = {
+      'discord': 'logo-discord',
+      'facebook': 'logo-facebook',
+      'google-meet': 'logo-google',
+      'skype': 'logo-skype',
+      'teams': 'logo-microsoft',
+      'telegram': 'paper-plane-outline',
+      'webex': 'globe-outline',
+      'whatsapp': 'logo-whatsapp',
+      'zoom': 'videocam-outline',
+      'otro': 'create-outline'
+    };
+    return icons[platform] || 'desktop-outline';
+  }
   checkNoActivities() {
     console.log("Reuniones:", this.reuniones);
     
+    // Asegúrate de que `authService.getCurrentUserId()` devuelva el ID del usuario actual
+    const currentUserId = this.authService.getCurrentUserId();
+  
     this.noActivitiesCreatedByUser = this.reuniones
       .filter(reunion => {
         const isValid = this.isValidReunion(reunion);
-        console.log("Reunión creada por usuario:", reunion.createdByUser, " - Válida:", isValid);
-        return reunion.createdByUser && isValid;
+        return reunion.created_by === currentUserId && isValid;
       })
       .length === 0;
   
     this.noActivitiesParticipant = this.reuniones
       .filter(reunion => {
         const isValid = this.isValidReunion(reunion);
-        console.log("Reunión en la que participa:", !reunion.createdByUser, " - Válida:", isValid);
-        return !reunion.createdByUser && isValid;
+        return reunion.created_by !== currentUserId && isValid;
       })
       .length === 0;
-  
-    console.log("No activities created by user:", this.noActivitiesCreatedByUser);
-    console.log("No activities participant:", this.noActivitiesParticipant);
   }
 
   isValidReunion(reunion: Reunion): boolean {
@@ -85,12 +86,12 @@ export class HomePage implements OnInit {
 }
 
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private reunionesService: ReunionesService,private authService: AuthService) {}
 
   ngOnInit() {
-    // Obtener los datos de la reunión enviados desde el DatePickerComponent
+    this.loadReuniones();
+    /* // Obtener los datos de la reunión enviados desde el DatePickerComponent
     const reunion: Reunion = history.state.reunion;
-    console.log('Reunión recibida:', reunion);
 
     // Añadir la reunión a las actividades creadas por el usuario si es válida
     if (this.isValidReunion(reunion)) {
@@ -100,12 +101,29 @@ export class HomePage implements OnInit {
     this.generateUpcomingActivityDates();
     this.generateUserCreatedActivities();
     this.generateParticipantActivities();
-    this.checkNoActivities();
+    this.checkNoActivities(); */
   }
+
+  async loadReuniones() {
+  try {
+    this.reuniones = await this.reunionesService.obtenerReuniones();
+    const currentUserId = this.authService.getCurrentUserId();
+
+    this.noActivitiesCreatedByUser = !this.reuniones.some(r => r.created_by === currentUserId);
+    this.noActivitiesParticipant = !this.reuniones.some(r => r.created_by !== currentUserId);
+  } catch (error) {
+    console.error('Error loading reuniones:', error);
+  }
+}
+  
 
   verParticipantes(reunion: Reunion) {
     // Navegar a la página de participantes y pasar la reunión seleccionada como estado
     this.router.navigate(['/participantes'], { state: { reunion } });
+  }
+  verDetalles(reunion: Reunion) {
+    // Navegar a la página de estado-reunion y pasar solo la ID de la reunión como estado
+    this.router.navigate(['/estado-reunion'], { state: { reunionId: reunion.id } });
   }
 
   generateUpcomingActivityDates() {
@@ -131,11 +149,27 @@ export class HomePage implements OnInit {
     this.participantActivities = this.userCreatedActivities.slice();
   }
 
-  formatDate(dates: Date[] | string | any[]): string {
-    console.log('Entrando en formatDate con:', dates);
+  /* formatDate(dates: any): string[] {
   
-    if (Array.isArray(dates)) {
-      const formattedDates = dates.map(date => {
+    if (Array.isArray(dates) && dates.length === 1 && Array.isArray(dates[0])) {
+      dates = dates[0]; // Desanidar el arreglo si es necesario
+    }
+  
+    if (!Array.isArray(dates)) {
+      throw new Error('El argumento dates debe ser un array.');
+    }
+  
+    if (dates.length === 3) {
+      // Handle case with exactly 3 dates
+      const dayDate = this.formatDayDate(dates[0]);
+      const startTime = this.formatTime(dates[1]);
+      const endTime = this.formatTime(dates[2]);
+  
+  
+      return [`${dayDate}`, `${startTime} - ${endTime}`]; // Devuelve un array de strings
+    } else {
+      // Handle other array cases
+      return dates.map(date => {
         if (Array.isArray(date)) {
           // Handle nested arrays, assuming they contain valid dates
           return date.map(subDate => this.formatSingleDate(subDate)).join(', ');
@@ -143,17 +177,20 @@ export class HomePage implements OnInit {
           return this.formatSingleDate(date);
         }
       });
-  
-      console.log('Fechas formateadas:', formattedDates);
-      return formattedDates.join(', ');
-    } else {
-      // Handle single date or string case
-      return this.formatSingleDate(dates);
     }
-  }
+  } */
+    formatDate(fechas_reunion: FechaReunion[]): string[] {
+      return fechas_reunion.map(fecha => {
+        const fechaObj = new Date(fecha.fecha);
+        const horaInicio = new Date(`1970-01-01T${fecha.hora_inicio}`);
+        const horaFin = new Date(`1970-01-01T${fecha.hora_fin}`);
+        return `${fechaObj.toLocaleDateString()} ${horaInicio.toLocaleTimeString()} - ${horaFin.toLocaleTimeString()}`;
+      });
+    }
+  
   
   formatSingleDate(date: string | Date): string {
-    console.log('Entrando en formatSingleDate con:', date);
+
   
     let dateObject: Date;
   
@@ -165,7 +202,7 @@ export class HomePage implements OnInit {
       throw new Error('Fecha inválida: se esperaba una cadena o un objeto Date.');
     }
   
-    console.log('Fecha convertida a objeto Date:', dateObject);
+
   
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
@@ -179,6 +216,47 @@ export class HomePage implements OnInit {
     return dateObject.toLocaleDateString('es-ES', options);
   }
   
+  formatDayDate(date: string | Date): string {
+  
+    let dateObject: Date;
+  
+    if (typeof date === 'string') {
+      dateObject = new Date(date); // Attempt to convert string to Date object
+    } else if (date instanceof Date) {
+      dateObject = date; // If already a Date object, use it directly
+    } else {
+      throw new Error('Fecha inválida: se esperaba una cadena o un objeto Date.');
+    }
+  
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    };
+  
+    return dateObject.toLocaleDateString('es-ES', options);
+  }
+  
+  formatTime(date: string | Date): string {
+  
+    let dateObject: Date;
+  
+    if (typeof date === 'string') {
+      dateObject = new Date(date); // Attempt to convert string to Date object
+    } else if (date instanceof Date) {
+      dateObject = date; // If already a Date object, use it directly
+    } else {
+      throw new Error('Fecha inválida: se esperaba una cadena o un objeto Date.');
+    }
+  
+    const options: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    };
+  
+    return dateObject.toLocaleTimeString('es-ES', options);
+  }
   
 
   

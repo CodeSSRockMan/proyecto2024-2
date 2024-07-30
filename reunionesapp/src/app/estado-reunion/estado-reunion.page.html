@@ -1,22 +1,61 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
     <ion-title>Estado de la Reunión</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-list *ngIf="totalParticipantes > 0">
+  <!-- Mostrar estados de la reunión -->
+  <div class="estado-reunion-container">
+    <div class="fase" *ngFor="let estado of estadosReunion; let i = index">
+      <div class="numero-circulo" [ngClass]="getEstadoColor(estado)">
+        <span>{{ i + 1 }}</span>
+      </div>
+      <div class="estado-label">
+        <ion-label>{{ estado | titlecase }}</ion-label>
+      </div>
+    </div>
+  </div>
 
-    <!-- Datos de la reunión -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{ reunion.motivo }}</ion-card-title>
-        <ion-card-subtitle>Motivo: {{ reunion.comentarios }}</ion-card-subtitle>
-        <ion-card-subtitle>Total de participantes: {{ totalParticipantes }}</ion-card-subtitle>
-        <ion-card-subtitle>Total confirmados: {{ confirmadosConFechas.length }}</ion-card-subtitle>
-      </ion-card-header>
-    </ion-card>
+  <!-- Datos de la reunión -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>{{ reunion?.motivo }}</ion-card-title>
+      <ion-card-subtitle>Motivo: {{ reunion?.comentarios }}</ion-card-subtitle>
+      <ion-card-subtitle>Total de participantes: {{ totalParticipantes }}</ion-card-subtitle>
+      <ion-card-subtitle>Total confirmados: {{ confirmadosConFechas.length }}</ion-card-subtitle>
+    </ion-card-header>
+    
+  </ion-card>
 
+  <ion-item>
+    <ion-icon [name]="getIconForPlatform(reunion?.ubicacion || 'default')" slot="start"></ion-icon>
+    <ion-label>
+      Ubicación: {{ reunion?.ubicacion }}
+    </ion-label>
+  </ion-item>
+
+  <!-- Mostrar código de invitación -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Código de Invitación</ion-card-title>
+    </ion-card-header>
+    <ion-card-content text-center>
+      <div *ngIf="reunion?.codigo_invitacion; else generateCode">
+        <ion-text>{{ reunion?.codigo_invitacion }}</ion-text>
+        <ion-icon name="copy" (click)="copyToClipboard(reunion?.codigo_invitacion ?? '')"></ion-icon>
+      </div>
+      <ng-template #generateCode>
+        <ion-button expand="block" (click)="generateInvitationCode()">Generar Código de Invitación</ion-button>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Contenido dinámico según el estado de la reunión -->
+  <ng-container *ngIf="reunion?.estado === 'coordinacion'; else planificacionContent">
     <!-- Formulario para elegir fecha -->
     <ion-card>
       <ion-card-header>
@@ -90,10 +129,39 @@
         </ion-list>
       </ion-card-content>
     </ion-card>
-  </ion-list>
+  </ng-container>
+
+<!-- Contenido para la etapa de planificación -->
+<ng-template #planificacionContent>
+  <ion-card *ngIf="reunion?.estado === 'planificacion'">
+    <ion-card-header>
+      <ion-card-title>Detalles Preeliminares</ion-card-title>
+      <ion-card-subtitle>Fechas Tentativas</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let fecha of reunion?.fechas_reunion">
+          <ion-label>
+            {{ formatDate(fecha.fecha) }} - {{ formatTime(fecha.hora_inicio) }} a {{ formatTime(fecha.hora_fin) }}
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" [routerLink]="['/participantes']" [state]="{ reunionId: reunion?.id }">
+        Ver Participantes
+        <ion-badge slot="end">{{ totalParticipantes }}</ion-badge>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+  <ion-button expand="block" (click)="confirmarDetalles()" [disabled]="!isValidToConfirm()">
+    Confirmar Detalles y Avanzar
+  </ion-button>
+</ng-template>
+
+
+
 
   <!-- Mensaje si no hay participantes -->
-  <ion-item *ngIf="totalParticipantes === 0">
+ <!-- <ion-item *ngIf="totalParticipantes === 0">
     <ion-label>No hay participantes</ion-label>
   </ion-item>
-</ion-content>
+</ion-content>-->

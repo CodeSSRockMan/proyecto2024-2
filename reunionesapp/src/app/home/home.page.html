@@ -1,10 +1,8 @@
 <ion-content [fullscreen]="true" class="ion-padding">
 
-  
   <!-- Calendario -->
   <div class="calendar-container">
     <ion-card>
-
       <ion-card-header>
         <ion-card-title style="text-align: center;">Vista General</ion-card-title>
       </ion-card-header>
@@ -22,14 +20,34 @@
   <ion-card class="activity-list">
     <ion-card-content>
       <ion-list *ngIf="!noActivitiesCreatedByUser">
-        <ion-item *ngFor="let reunion of reuniones" (click)="verParticipantes(reunion)">
-          <ion-label *ngIf="reunion.createdByUser && isValidReunion(reunion)">
-            <h2>{{ formatDate(reunion.fechas) }}</h2>
-            <div class="description-container">
-              <p>{{ reunion.motivo }}</p>
+        <ion-item *ngFor="let reunion of reuniones" (click)="verDetalles(reunion)">
+          <ion-label *ngIf="reunion.created_by && isValidReunion(reunion)">
+            <div class="chip-container">
+              <!-- Chip para indicar si es presencial o digital -->
+              <ion-chip *ngIf="reunion.tipo">
+                <ion-icon [name]="reunion.tipo === 'Presencial' ? 'business-outline' : 'globe-outline'"></ion-icon>
+                <ion-label>{{ reunion.tipo }}</ion-label>
+              </ion-chip>
+  
+              <!-- Chip para la dirección o plataforma -->
+              <ion-chip *ngIf="reunion.ubicacion">
+                <ion-icon [name]="reunion.tipo === 'Presencial' ? 'location-outline' : getIconForPlatform(reunion.ubicacion)"></ion-icon>
+                <ion-label>{{ reunion.ubicacion }}</ion-label>
+              </ion-chip>
+  
+              <!-- Chip para el estado de la reunión -->
+              <ion-chip *ngIf="reunion.estado">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <ion-label>{{ reunion.estado }}</ion-label>
+              </ion-chip>
             </div>
+  
+            <div class="ion-text-wrap">
+              <h2 *ngFor="let line of formatDate(reunion.fechas_reunion)">{{ line }}</h2>
+            </div>
+            
             <div class="location-container">
-              <p>{{ reunion.ubicacion }}</p>
+              <p>{{ reunion.motivo }}</p>
             </div>
           </ion-label>
         </ion-item>
@@ -49,8 +67,13 @@
     <ion-card-content>
       <ion-list *ngIf="!noActivitiesParticipant">
         <ion-item *ngFor="let reunion of reuniones" (click)="verParticipantes(reunion)">
-          <ion-label *ngIf="!reunion.createdByUser && isValidReunion(reunion)">
-            <h2>{{ formatDate(reunion.fechas) }}</h2>
+          <ion-label *ngIf="!reunion.created_by && isValidReunion(reunion)">
+            <div class="ion-text-wrap">
+              <div>{{ formatDate(reunion.fechas_reunion)[0] }}</div>
+              <div *ngFor="let line of formatDate(reunion.fechas_reunion).slice(1)">
+                <div>{{ line }}</div>
+              </div>
+            </div>
             <div class="description-container">
               <p>{{ reunion.motivo }}</p>
             </div>
@@ -65,5 +88,6 @@
       </div>
     </ion-card-content>
   </ion-card>
+
   <div style="height: 200px;"></div>
 </ion-content>

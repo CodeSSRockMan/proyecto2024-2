@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 
 import { ReactiveFormsModule } from '@angular/forms';
 
+import { Clipboard } from '@capacitor/clipboard';
+
 @NgModule({
   declarations: [AppComponent,GuestCodePopoverComponent],
   imports: [BrowserModule, IonicModule.forRoot(),ReactiveFormsModule, AppRoutingModule, FullCalendarModule,FormsModule],

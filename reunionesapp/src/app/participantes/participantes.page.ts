@@ -2,25 +2,8 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/co
 import { AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController, AlertController } from '@ionic/angular';
-
-interface Participante {
-  nombre: string;
-  telefono: string;
-  fechasElegidas?: boolean;
-  editando?: boolean;
-  // Agrega la propiedad 'valoresOriginales' para guardar los valores originales
-  valoresOriginales?: Partial<Participante>;
-}
-
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  ubicacion?: string;
-  fecha: Date[];
-  participantes: Participante[];
-  createdByUser: boolean; // Indica si la reunión fue creada por el usuario
-}
+import { ReunionesService, FechaReunion, Reunion, Participante } from '../services/reuniones.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-participantes',
@@ -28,21 +11,10 @@ interface Reunion {
   styleUrls: ['./participantes.page.scss'],
 })
 export class ParticipantesPage implements OnInit, AfterViewInit {
-  reunion: Reunion = {
-    motivo: '',
-    comentarios: '',
-    estado: '',
-    ubicacion:'',
-    fecha: [],
-    participantes: [],
-    createdByUser: false
-  };
-  participantes: Participante[] = [
-    { nombre: 'Juan', telefono: '+56 934567890' },
-    { nombre: 'María', telefono: '+56 987654321', fechasElegidas: true }
-    // Agrega más participantes según sea necesario
-  ];
-  
+  reunion: Reunion | null = null;
+  editando: boolean[] = []; // Arreglo para manejar el estado de edición por índice
+  participantes: Participante[] = [];
+  mostrarMensajeInstrucciones: boolean = true;
 
   constructor(
     private toastController: ToastController,
@@ -50,22 +22,50 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
+    private reunionesService: ReunionesService,
+    private authService:AuthService
   ) {}
 
   ngOnInit() {
-    this.reunion = history.state.reunion;
-  console.log('Reunión2:', this.reunion);
-    // Asigna la lista de participantes de la reunión a la variable 'participantes'
-    if (this.reunion && this.reunion.participantes) {
-      this.participantes = this.reunion.participantes;
-      console.log('Datos de la reunión:', this.reunion);
-      console.log('Participantes de la reunión:', this.participantes);
-      this.cdr.detectChanges();
+    // Recuperar la ID de la reunión desde el estado de navegación
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras.state as { reunionId: number };
+  
+    if (state?.reunionId) {
+      this.loadReunionData(state.reunionId);
+    }
+  }
+  async loadReunionData(reunionId: number) {
+    try {
+      this.reunion = await this.reunionesService.obtenerReunionPorId(reunionId);
+      if (this.reunion) {
+        this.participantes = this.reunion.participantes || [];
+        this.editando = this.participantes.map(() => false); // Inicializa el arreglo con `false`
+        console.log('Reunión:', this.reunion);
+        console.log('Participantes:', this.participantes);
+        this.cdr.detectChanges(); // Detecta los cambios para actualizar la vista
+      } else {
+        console.error('La reunión no fue encontrada.');
+      }
+    } catch (error) {
+      console.error('Error fetching reunion:', error);
     }
   }
 
+  cerrarMensaje() {
+    this.mostrarMensajeInstrucciones = false;
+  }
+
   ngAfterViewInit() {
-    this.detectOverflowAndAnimate();
+    //this.detectOverflowAndAnimate();
+  }
+
+  isCurrentUser(usuarioId: string): boolean {
+    return usuarioId === this.authService.getCurrentUserId();
+  }
+
+  getCurrentUserId(): string {
+    return this.authService.getCurrentUserId();
   }
 
   async presentToast(message: string, duration: number = 2000) {
@@ -85,13 +85,12 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     window.open('https://wa.me/' + telefono);
   }
 
-  editarParticipante(participante: Participante) {
-    participante.editando = true;
-    // Guarda los valores originales antes de la edición
-    participante.valoresOriginales = { ...participante };
+  editarParticipante(index: number) {
+    this.editando[index] = true;
   }
 
-  async confirmarEdicion(participante: Participante) {
+  async confirmarEdicion(index: number) {
+    const participante = this.participantes[index];
     const alert = await this.alertController.create({
       header: 'Confirmar',
       message: '¿Estás seguro de que deseas guardar los cambios?',
@@ -101,13 +100,13 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
           role: 'cancel',
           cssClass: 'secondary',
           handler: () => {
-            this.cancelarEdicion(participante);
+            this.cancelarEdicion(index);
           }
         },
         {
           text: 'Guardar',
           handler: () => {
-            this.guardarCambios(participante);
+            this.guardarCambios(index);
           }
         }
       ]
@@ -115,25 +114,33 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  async guardarCambios(participante: Participante) {
-    if (true) { // Verifica si el formulario es válido
+  goBack() {
+    this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
+
+  async guardarCambios(index: number) {
+    const participante = this.participantes[index];
+    if (this.isParticipanteValido(participante)) {
       await this.presentToast('Cambios guardados exitosamente.');
-      participante.editando = false;
-      // Puedes agregar la lógica para guardar los cambios en el servidor si es necesario
+      this.editando[index] = false;
     } else {
       await this.presentToast('Por favor, corrige los errores en el formulario.');
     }
   }
 
-  cancelarEdicion(participante: Participante) {
-    participante.editando = false;
-    // Restaura los valores originales en caso de cancelación
-    if (participante.valoresOriginales) {
-      Object.assign(participante, participante.valoresOriginales);
-    }
+  isParticipanteValido(participante: Participante): boolean {
+    // Implementa la lógica para validar el participante
+    return true; // Cambia esta línea según la lógica de validación
   }
 
-  async confirmarEliminacion(participante: Participante) {
+  cancelarEdicion(index: number) {
+    this.editando[index] = false;
+    // Restaura los valores originales en caso de cancelación si es necesario
+  }
+
+  async confirmarEliminacion(index: number) {
+    const participante = this.participantes[index];
     const alert = await this.alertController.create({
       header: 'Confirmar',
       message: '¿Estás seguro de que deseas eliminar a este participante?',
@@ -146,7 +153,7 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
         {
           text: 'Eliminar',
           handler: () => {
-            this.eliminarParticipante(participante);
+            this.eliminarParticipante(index);
           }
         }
       ]
@@ -154,22 +161,20 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  async eliminarParticipante(participante: Participante) {
-    const index = this.participantes.indexOf(participante);
+  async eliminarParticipante(index: number) {
     if (index !== -1) {
       this.participantes.splice(index, 1);
+      this.editando.splice(index, 1); // Elimina el estado de edición correspondiente
       await this.presentToast('Participante eliminado exitosamente.');
     }
   }
 
   agregarParticipante() {
-    //this.router.navigate(['/reuniones-agregar-participante'], { state: { reunion: this.reunion } });
     this.router.navigate(['/agregar-participante-manual'], { state: { reunion: this.reunion } });
-    
   }
 
-  toggleEdicion(participante: Participante) {
-    participante.editando = !participante.editando;
+  toggleEdicion(index: number) {
+    this.editando[index] = !this.editando[index];
     this.detectOverflowAndAnimate();
   }
 
@@ -190,14 +195,13 @@ export class ParticipantesPage implements OnInit, AfterViewInit {
     });
   }
 
-   // Define el validador phoneNumberValidator
-   phoneNumberValidator(): ValidatorFn {
+  phoneNumberValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       const phoneNumber = control.value;
       if (phoneNumber && /^\+56\d{9}$/.test(phoneNumber)) {
         return null; // Válido
       } else {
-        return { 'invalidPhoneNumber': true, 'invalidLength': true }; // Inválido
+        return { 'invalidPhoneNumber': true }; // Inválido
       }
     };
   }

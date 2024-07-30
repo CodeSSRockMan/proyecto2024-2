@@ -77,3 +77,31 @@ ion-input {
   margin: 0; /* Elimina cualquier margen que pueda afectar el ancho */
   padding: 0; /* Elimina cualquier relleno que pueda afectar el ancho */
 }
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px; /* Reduce the gap between chips */
+  margin-bottom: 10px;
+  justify-content: center; /* Center the chips horizontally */
+}
+
+ion-chip {
+  --padding-start: 1px; /* Reduce padding */
+  --padding-end: 1px;
+  --border-radius: 8px;
+  --background: #f4f4f4;
+  height: 8px; /* Reduce height to make them more compact */
+  font-size: 10px; /* Adjust font size if needed */
+  line-height: 12px; /* Adjust line height for better spacing */
+}
+
+.ion-text-wrap h2 {
+  text-align: center; /* Center the text */
+  margin: 0; /* Remove margin to avoid extra space */
+}
+
+.description-container p,
+.location-container p {
+  text-align: center; /* Center the text */
+}

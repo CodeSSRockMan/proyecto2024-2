@@ -59,3 +59,68 @@ ion-input {
 .date-radio {
     margin-right: 10px; /* Ajusta el espacio entre el botón de radio y la fecha */
 }
+.estado-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .estado-circulo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--ion-color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+  }
+  
+  .estado-nombre {
+    font-size: 1em;
+    text-transform: capitalize;
+  }
+
+  .estado-reunion-container {
+    display: flex;
+    justify-content: space-between; // Distribuye uniformemente los elementos
+    align-items: center;
+    margin: 20px 0;
+  
+    .fase {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+  
+      .numero-circulo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 5px;
+  
+        &.success {
+          background-color: var(--ion-color-success);
+          color: white;
+        }
+  
+        &.medium {
+          background-color: var(--ion-color-medium);
+          color: white;
+        }
+      }
+  
+      .estado-label {
+        font-size: 14px; // Ajusta el tamaño del texto
+        margin-top: 5px;
+      }
+    }
+  }

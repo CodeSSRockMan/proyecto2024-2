@@ -1,29 +1,40 @@
-<ion-title class="custom-title">
-  {{ capitalizeFirstLetter(selectedDateFormatted) }}
-</ion-title>
-<div class="calendar-container" *ngIf="showCalendar">
-  <div class="calendar-header">
-    <button (click)="prevMonth()">◄</button>
-    <h3>{{ currentMonth }}</h3>
-    <button (click)="nextMonth()">►</button>
-  </div>
-  <div class="calendar-body">
-    <div class="day-names">
-      <div class="day-name">Lun</div>
-      <div class="day-name">Mar</div>
-      <div class="day-name">Mié</div>
-      <div class="day-name">Jue</div>
-      <div class="day-name">Vie</div>
-      <div class="day-name">Sáb</div>
-      <div class="day-name">Dom</div>
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="custom-title">
+      {{ capitalizeFirstLetter(selectedDateFormatted) }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="calendar-container" *ngIf="showCalendar">
+    <div class="calendar-header">
+      <button ion-button (click)="prevMonth()">◄</button>
+      <h3>{{ currentMonth }}</h3>
+      <button ion-button (click)="nextMonth()">►</button>
     </div>
-    <div *ngFor="let day of days" class="day-cell"
-      [class.current-month-day]="day.isCurrentMonth"
-      [class.today]="day.isToday"
-      [class.selectable]="day.isSelectable"
-      [class.selected-day]="day.isSelected"
-      (click)="day.isSelectable && selectDay(day)">
-      {{ day.day }}
+    
+    <div class="calendar-body">
+      <div class="day-names">
+        <div class="day-name">Lun</div>
+        <div class="day-name">Mar</div>
+        <div class="day-name">Mié</div>
+        <div class="day-name">Jue</div>
+        <div class="day-name">Vie</div>
+        <div class="day-name">Sáb</div>
+        <div class="day-name">Dom</div>
+      </div>
+      
+      <div class="days-grid">
+        <div *ngFor="let day of days" class="day-cell"
+          [class.current-month-day]="day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.selectable]="day.isSelectable"
+          [class.selected-day]="day.isSelected"
+          (click)="day.isSelectable && selectDay(day)">
+          {{ day.day }}
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</ion-content>

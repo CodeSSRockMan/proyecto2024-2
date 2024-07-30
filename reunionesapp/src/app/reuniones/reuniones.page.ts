@@ -1,28 +1,13 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MenuController } from '@ionic/angular';
-import { formatDate } from '@angular/common';
+import { Router } from '@angular/router';
 import { Swiper } from 'swiper';
 import { Navigation, Pagination } from 'swiper/modules';
-import { Router } from '@angular/router';
+import { ReunionesService } from '../services/reuniones.service';
+import { Reunion, FechaReunion, Participante } from '../services/reuniones.service';
+import { AuthService } from '../services/auth.service';
 
 Swiper.use([Navigation, Pagination]);
-
-interface Reunion {
-  motivo: string;
-  comentarios: string;
-  estado: string;
-  fechas: any[]; // Se mantiene igual, asumiendo que ya contiene la información de fecha y hora
-  participantes: Participante[];
-  createdByUser: boolean;
-  direccion?:string;
-  ubicacion?: string; // Ubicación de la reunión (opcional)
-  tipo?: string; // Tipo de reunión (opcional)
-}
-
-interface Participante {
-  nombre: string;
-  telefono: string;
-}
 
 @Component({
   selector: 'app-reuniones',
@@ -37,10 +22,10 @@ export class ReunionesPage implements OnInit {
   physicalLocation: string = '';
   reason: string = '';
   comments: string = '';
-  selectedDate: string = '';
+  selectedDates: string[] = [];
   selectedStartTime: string = '';
   selectedEndTime: string = '';
-  meetingDates: Date[][] = [];
+  meetingDates: FechaReunion[] = [];
   minDate: string = '';
   defaultDate: string = '';
   progressValue: number = 0;
@@ -57,10 +42,9 @@ export class ReunionesPage implements OnInit {
   comentarios: string = '';
   location: { type: string, value: string, other?: string };
   
-
-  constructor(private menuCtrl: MenuController, private router: Router) {
+  constructor(private menuCtrl: MenuController, private router: Router, private reunionesService: ReunionesService,private authService:AuthService) {
     this.location = { type: '', value: '', other: '' };
-    this.setDates();
+    
     this.slides = [
       { progress: 0, valid: false }, // Slide 1
       { progress: 0, valid: false }, // Slide 2
@@ -124,163 +108,245 @@ export class ReunionesPage implements OnInit {
     return obj instanceof Date;
   }
 
+  // Método para añadir una fecha de reunión
+  // Método para añadir una fecha de reunión
   addMeetingDate() {
-    if (!this.selectedDate || this.selectedDate.length === 0 || !this.selectedStartTime || !this.selectedEndTime) {
-      console.error('Debes seleccionar la fecha, hora de inicio y hora de fin antes de añadir la reunión.');
+    console.log("Selected Dates:", this.selectedDates);
+    console.log("Selected Start Time:", this.selectedStartTime);
+    console.log("Selected End Time:", this.selectedEndTime);
+
+    if (!this.selectedDates.length || !this.selectedStartTime || !this.selectedEndTime) {
+      console.error('Una o más fechas u horas están vacías');
       return;
     }
-  
-    // Iterar sobre las fechas seleccionadas
-    for (let i = 0; i < this.selectedDate.length; i++) {
-      const selectedDate = new Date(this.selectedDate[i]);
-      const selectedStartTime = new Date(this.selectedStartTime);
-      const selectedEndTime = new Date(this.selectedEndTime);
-  
-      // Sumar 4 horas para convertir a hora de Chile
-      selectedDate.setHours(selectedDate.getHours() + 4);
-      selectedStartTime.setHours(selectedStartTime.getHours());
-      selectedEndTime.setHours(selectedEndTime.getHours());
-  
-      // Verificar si las fechas y horas son válidas
-      if (isNaN(selectedDate.getTime()) || isNaN(selectedStartTime.getTime()) || isNaN(selectedEndTime.getTime())) {
-        console.error('Una o más fechas u horas son inválidas:', selectedDate, selectedStartTime, selectedEndTime);
-        continue; // Saltar esta iteración si alguna fecha u hora es inválida
-      }
-  
-      // Crear un objeto combinado de reunión
-      const combinedMeeting = [selectedDate, selectedStartTime, selectedEndTime];
-  
-      // Verificar si la reunión ya existe en la matriz meetingDates
-      const alreadyExists = this.meetingDates.some(existingMeeting =>
-        existingMeeting[0].getTime() === selectedDate.getTime() &&
-        existingMeeting[1].getTime() === selectedStartTime.getTime() &&
-        existingMeeting[2].getTime() === selectedEndTime.getTime()
-      );
-  
-      if (alreadyExists) {
-        console.error('La reunión ya existe en la lista de reuniones:', combinedMeeting);
-        continue; // Saltar esta iteración si la reunión ya existe
-      }
-  
-      // Añadir la reunión a la matriz meetingDates
-      this.meetingDates.push(combinedMeeting);
-  
-      // Log para verificar los datos agregados
-      console.log('Datos añadidos:', combinedMeeting);
+
+    // Convertir la hora de inicio y fin en minutos desde medianoche
+    const [startHour, startMinute] = this.selectedStartTime.split(':').map(Number);
+    const [endHour, endMinute] = this.selectedEndTime.split(':').map(Number);
+    const startTimeInMinutes = startHour * 60 + startMinute;
+    const endTimeInMinutes = endHour * 60 + endMinute;
+
+    // Verificar que la hora de fin no sea antes de la hora de inicio
+    if (endTimeInMinutes <= startTimeInMinutes) {
+      console.error('La hora de fin debe ser después de la hora de inicio.');
+      return;
     }
+
+    this.selectedDates.forEach(dateStr => {
+      // Convertir la fecha seleccionada a un formato Date
+      const date = new Date(dateStr);
+
+      // Crear las fechas y horas directamente
+      const startDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), startHour, startMinute);
+      const endDateTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), endHour, endMinute);
+
+      // Solo la fecha en formato YYYY-MM-DD
+      const formattedDate = date.toISOString().split('T')[0]; // Obtener YYYY-MM-DD
+
+      // Solo la hora en formato HH:MM
+      const formattedStartTime = startDateTime.toTimeString().split(' ')[0].slice(0, 5); // Obtener HH:MM
+      const formattedEndTime = endDateTime.toTimeString().split(' ')[0].slice(0, 5); // Obtener HH:MM
+
+      // Verificar si ya existe una fecha tentativa igual
+      const existingDate = this.meetingDates.find(m => m.fecha === formattedDate && m.hora_inicio === formattedStartTime && m.hora_fin === formattedEndTime);
+      if (existingDate) {
+        console.error('La fecha y hora ya están registradas.');
+        return;
+      }
+
+      // Guardar la fecha y las horas sin zona horaria
+      this.meetingDates.push({
+        id:0,
+        fecha: formattedDate, // Solo la fecha en formato YYYY-MM-DD
+        hora_inicio: formattedStartTime, // Solo la hora de inicio en formato HH:MM
+        hora_fin: formattedEndTime // Solo la hora de fin en formato HH:MM
+      });
+    });
+
+    console.log("Meeting Dates:", this.meetingDates);
+
+    this.slides[1].valid = this.meetingDates.length > 0;
+    this.isSlideValid(1);
+    this.completeSlide(1);
+}
+
   
-    // Ordenar las reuniones por fecha ascendente
-    this.meetingDates.sort((a, b) => a[0].getTime() - b[0].getTime());
+  
+
+  // Formatea la fecha en formato ISO 8601
+// Formatea la fecha en formato DD/MM/YYYY desde una fecha ISO
+// Formatea la fecha en formato DD/MM/YYYY desde una fecha en formato ISO o DD/MM/YYYY
+// Método para formatear la fecha
+formatDate(dateString: string): string {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long', // Día de la semana
+    day: 'numeric',  // Día del mes
+    month: 'long',   // Mes
+    year: 'numeric'  // Año
+  };
+
+  return date.toLocaleDateString('es-ES', options);
+}
+
+formatTime(time: string): string {
+  // Verificar si el tiempo está en formato válido (HH:mm)
+  const [hours, minutes] = time.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    console.error("Invalid Time:", time);
+    return "Hora Inválida";
   }
 
-  formatDate(date: Date): string {
+  // Crear un objeto Date con la hora y minuto proporcionado
+  const d = new Date();
+  d.setHours(hours);
+  d.setMinutes(minutes);
+  d.setSeconds(0); // Establecer segundos a 0
+
+  // Opciones para el formato en 12 horas con AM/PM
+  const options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+  const formattedTime = d.toLocaleTimeString('es-ES', options);
+
+/*   console.log("Original Time String:", time);
+  console.log("Parsed Time Object:", d);
+  console.log("Formatted Time:", formattedTime); */
+
+  return formattedTime; // Devuelve la hora en formato 12 horas con AM/PM
+}
+
+  /* formatDate(date: Date): string {
     return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
   
   formatTime(date: Date): string {
     return date.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true });
   }
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-  crearReunion() {
-    // Verificar si hay fechas de reunión seleccionadas
+ */
+  async crearReunion() {
     if (this.meetingDates.length === 0) {
       console.error('No hay fechas de reunión seleccionadas.');
-      return; // Salir de la función si no hay fechas seleccionadas
+      return;
     }
+
+    const userId = this.authService.getCurrentUserId();
+  if (!userId) {
+    console.error('User ID is invalid or not found');
+    return;
+  }
   
-    // Crear una nueva reunión con los datos actuales
     const nuevaReunion: Reunion = {
+      id:0,
       motivo: this.motivo,
-      ubicacion: this.locationName,
-      tipo: this.locationType,
+      ubicacion: this.location.value, // Cambiado aquí
+      tipo: this.location.type,
+      codigo_invitacion: '',
       comentarios: this.comentarios,
-      estado: 'programada', // Se puede establecer un estado predeterminado
-      fechas: this.meetingDates, // Usar todas las fechas agregadas
+      estado: 'planificacion',
+      fechas_reunion: this.meetingDates.map(date => ({
+        id:0,
+        fecha: date.fecha,
+        hora_inicio: date.hora_inicio,
+        hora_fin: date.hora_fin
+      })),
       participantes: [],
-      createdByUser: true // Suponiendo que la reunión fue creada por el usuario
+      created_by: userId // Cambiado aquí
     };
   
-    // Agregar un registro de consola para mostrar la nueva reunión
-    console.log('Nueva reunión:', nuevaReunion);
-  
-    // Navegar al componente de la página de inicio (Home) y pasar la reunión como parámetro
-    this.router.navigate(['/home'], { state: { reunion: nuevaReunion } });
-  
-    // Luego de crear la reunión, puedes restablecer los campos de motivo y comentarios si es necesario
-    this.motivo = '';
-    this.comentarios = '';
-  
-    // También puedes realizar cualquier otra acción que necesites después de crear la reunión
+    try {
+      await this.reunionesService.crearReunion(nuevaReunion);
+      console.log('Nueva reunión creada:', nuevaReunion);
+      this.router.navigate(['/home']); // Actualizado aquí, sin estado
+    } catch (error) {
+      console.error('Error al crear la reunión:', error);
+    }
   }
+  
 
   updateEndTime() {
     if (this.selectedStartTime) {
-      const startTime = new Date(this.selectedStartTime);
+      // Crea un objeto Date usando la hora de inicio
+      const startTime = new Date(`1970-01-01T${this.selectedStartTime}:00`); // Ajusta para formato de 24 horas
+  
+      // Crea una nueva fecha usando la hora de inicio
       const endTime = new Date(startTime);
-
-      // Añadir una hora a la hora de inicio
+      
+      // Aumenta la hora de fin en 1 hora
       endTime.setHours(startTime.getHours() + 1);
-
-      const endYear = endTime.getFullYear();
-      const endMonth = ('0' + (endTime.getMonth() + 1)).slice(-2);
-      const endDate = ('0' + endTime.getDate()).slice(-2);
-      const endHours = ('0' + endTime.getHours()).slice(-2);
-      const endMinutes = ('0' + endTime.getMinutes()).slice(-2);
-      this.selectedEndTime = `${endYear}-${endMonth}-${endDate}T${endHours}:${endMinutes}`;
-    } else {
-      console.log('La hora de inicio no está definida. No se puede actualizar la hora de fin.');
+      
+      // Obtén la hora y minuto en formato de 24 horas
+      const endHour = endTime.getHours();
+      const endMinute = endTime.getMinutes();
+      
+      // Formatea la hora de fin en formato de 24 horas
+      this.selectedEndTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+      
+      console.log('Hora de fin actualizada a:', this.selectedEndTime);
     }
   }
+  
 
+  // Método para establecer las fechas mínimas y predeterminadas
+// Método para redondear los minutos al siguiente valor disponible en intervalos de 15 minutos
+roundMinutes(minutes: number): number {
+  return Math.ceil(minutes / 15) * 15;
+}
+
+// Método para establecer las fechas mínimas y predeterminadas
+setDates() {
+  const today = new Date();
+  const currentHours = today.getHours();
+  const currentMinutes = today.getMinutes();
+
+  // Redondear los minutos al siguiente valor disponible en intervalos de 15 minutos
+  const roundedMinutes = this.roundMinutes(currentMinutes);
+  
+  // Hora de inicio: una hora más adelante con minutos redondeados
+  const startHour = (currentHours) % 24; // Asegura que no exceda las 24 horas
+  const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, roundedMinutes);
+  
+  // Hora de fin: una hora después de la hora de inicio
+  const endHour = (startHour + 1) % 24; // Hora de fin es una hora después de la hora de inicio
+  const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, roundedMinutes);
+
+  // Convertir las fechas a las zonas horarias locales y formatear para ion-datetime
+  this.minDate = today.toISOString().substring(0, 10); // Fecha actual sin hora
+  this.selectedDates = [today.toISOString().substring(0, 10)]; // Iniciar con un arreglo con la fecha actual
+  this.selectedStartTime = startDate.toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }); // Hora de inicio en formato local
+  this.selectedEndTime = endDate.toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }); // Hora de fin en formato local
+
+  // Asegúrate de que se muestre correctamente en el formato esperado por ion-datetime
+/*   console.log('Min Date:', this.minDate);
+  console.log('Selected Dates:', this.selectedDates);
+  console.log('Selected Start Time:', this.selectedStartTime);
+  console.log('Selected End Time:', this.selectedEndTime); */
+}
+
+  // Generar opciones de hora
   generateHourOptions() {
-    const hours = [];
-    for (let hour = 0; hour < 24; hour++) {
-      const hourString = hour.toString().padStart(2, '0');
-      hours.push(hourString);
-    }
-    this.hourOptions = hours;
+    this.hourOptions = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
   }
 
+  // Generar opciones de minuto
   generateMinuteOptions() {
-    const minutes = [];
-    for (let minute = 0; minute < 60; minute += 15) {
-      const minuteString = minute.toString().padStart(2, '0');
-      minutes.push(minuteString);
-    }
-    this.minuteOptions = minutes;
-  }
-
-  updateMinutes(type: string) {
-    if (type === 'start') {
-      this.selectedStartTime = `${this.selectedStartHour}:${this.selectedStartMinute}`;
-    } else {
-      this.selectedEndTime = `${this.selectedEndHour}:${this.selectedEndMinute}`;
-    }
+    this.minuteOptions = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
   }
 
   isSlideValid(index: number): boolean {
     switch(index) {
       case 0:
-        return this.meetingName !== '' && this.location.type !== '' && (this.location.type === 'presencial' ? this.location.value !== '' : true) && this.motivo !== '' && this.comentarios !== '';
+        return this.location.type !== '' && (this.location.type === 'presencial' ? this.location.value !== '' : true) && this.motivo !== '' && this.comentarios !== '';
       case 1:
-        return this.selectedDate !== '' && this.selectedStartTime !== '' && this.selectedEndTime !== '';
+        return this.selectedDates.length > 0 && this.selectedStartTime !== '' && this.selectedEndTime !== '';
       case 2:
         return this.meetingDates.length > 0;
       default:
         return false;
     }
   }
-  
-  completeSlide(index: number, isValid: boolean) {
+
+  completeSlide(index: number) {
     if (this.isSlideValid(index)) {
       this.slides[index].progress = 100;
       this.slides[index].valid = true;
@@ -290,51 +356,29 @@ export class ReunionesPage implements OnInit {
       this.slides[index].valid = false;
     }
   }
-  
-  goToNextSlide() {
-    if (this.swiperInstance) {
-      this.swiperInstance.slideNext();
-    }
-  }
-
   validateSlide(index: number): boolean {
     switch(index) {
       case 0:
-        return this.meetingName !== '' && this.locationName !== '' && this.physicalLocation !== '' && this.reason !== '' && this.comments !== '';
+        return this.meetingName !== '' && this.location.type !== '' && (this.location.type === 'presencial' ? this.location.value !== '' : true) && this.motivo !== '' && this.comentarios !== '';
       case 1:
-        return this.selectedDate !== '' && this.selectedStartTime !== '' && this.selectedEndTime !== '';
+        return this.selectedDates.length > 0 && this.selectedStartTime !== '' && this.selectedEndTime !== '';
       case 2:
         return this.meetingDates.length > 0;
       default:
         return false;
     }
   }
-
-  nextSlide() {
-    this.progressValue += 0.33; // Incrementa el valor de progreso en un tercio
-  }
-
-  setDates() {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    this.minDate = tomorrow.toISOString().substring(0, 10); // Solo la parte de la fecha
-    this.selectedDate = tomorrow.toISOString().substring(0, 10); // Solo la parte de la fecha
-    this.selectedStartTime = this.selectedDate + 'T00:00:00'; // Hora de inicio a las 00:00:00
-    this.selectedEndTime = this.selectedDate + 'T01:00:00'; // Hora de fin a la 01:00:00
-  }
-
-  toggleMenu() {
-    this.menuCtrl.toggle(); // Alternar la visibilidad del menú
-  }
-
-  removeMeetingDate(index: number) {
-    if (index > -1 && index < this.meetingDates.length) {
-      this.meetingDates.splice(index, 1);
+  
+  goToNextSlide() {
+    if (this.swiperInstance) {
+      this.swiperInstance.slideNext();
     }
   }
-
-  removeAllMeetingDates() {
-    this.meetingDates = [];
+  removeMeetingDate(index: number) {
+    if (index >= 0 && index < this.meetingDates.length) {
+      this.meetingDates.splice(index, 1);
+    } else {
+      console.error('Índice de reunión fuera de rango:', index);
+    }
   }
 }
