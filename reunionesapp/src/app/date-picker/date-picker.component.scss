@@ -1,33 +1,35 @@
-/* Estilos específicos para el componente DatePickerComponent */
-
 .date-picker-container {
   font-family: Arial, sans-serif;
+  max-width: 100%; /* Asegura que el contenedor no exceda el ancho disponible */
+  margin: 0 auto; /* Centra el contenedor si el ancho es menor que el disponible */
 }
 
 .calendar-container {
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
-  padding: 10px;
+  padding: 5px; /* Reduce el padding para ajustar el tamaño */
+  max-width: 100%; /* Asegura que el contenedor se ajuste al espacio disponible */
 }
 
 .calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px; /* Reduce el margen para ajustar el tamaño */
 }
 
 .calendar-header button {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  font-size: 1.5em;
+  font-size: 1.2em; /* Ajusta el tamaño del botón */
 }
 
 .calendar-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr); /* Asegura que hay 7 columnas */
+  gap: 2px; /* Reduce el espacio entre las celdas */
 }
 
 .day-names {
@@ -37,15 +39,28 @@
 .day-name {
   text-align: center;
   font-weight: bold;
-  padding: 5px 0; /* Asegura un espaciado consistente */
+  padding: 2px 0; /* Ajusta el espaciado para reducir el tamaño */
+  font-size: 0.9em; /* Ajusta el tamaño de la fuente */
+}
+
+.days-grid {
+  display: contents; /* Alinea los días con las celdas */
 }
 
 .day-cell {
   text-align: center;
-  padding: 10px;
+  padding: 8px; /* Ajusta el padding para reducir el tamaño */
   border-radius: 50%;
   cursor: pointer;
   box-sizing: border-box; /* Incluye padding y borde en el tamaño de la celda */
+  background-color: #fff; /* Color de fondo por defecto */
+  font-size: 0.9em; /* Ajusta el tamaño de la fuente */
+}
+
+.empty-cell {
+  background-color: transparent; /* Celdas vacías no deben tener color de fondo */
+  border: none; /* Sin borde */
+  cursor: default; /* Sin cursor de puntero */
 }
 
 .current-month-day {
@@ -65,8 +80,7 @@
   opacity: 0.5;
   pointer-events: none; /* Deshabilita eventos de puntero */
   background-color: #f0f0f0; /* Cambiar el color de fondo */
-  color: #999; /* Cambiar el color del texto */
-  border-radius: 50%; /* Hacer los días no seleccionables redondos */
+  color: black; /* Cambiar el color del texto */
 }
 
 .today {
@@ -76,9 +90,10 @@
 .custom-title {
   text-align: center;
   white-space: nowrap !important; /* Evita que el texto se divida en varias líneas */
-  overflow: auto; /* Oculta cualquier parte del texto que no quepa */
+  overflow: hidden; /* Oculta cualquier parte del texto que no quepa */
   font-size: calc(1em + 1vw); /* Tamaño de fuente relativo */
 }
+
 @media screen and (min-width: 360px) {
   .custom-title {
     font-size: calc(0.8em + 0.8vw); /* Reducir el tamaño de la fuente cuando el contenedor sea más pequeño */

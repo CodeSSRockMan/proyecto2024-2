@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FechaReunion, Reunion } from '../services/reuniones.service'; // Asegúrate de importar desde el servicio correcto
+import { FechaReunion, Reunion } from '../services/reuniones.service';
+import { ReunionesService } from '../services/reuniones.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-date-picker',
@@ -14,30 +16,74 @@ export class DatePickerComponent implements OnInit {
   showCalendar: boolean = true;
   currentMonth: string = '';
   selectedDateFormatted: string = '';
+  emptyCells: number[] = [];
   days: any[] = [];
+  loading: boolean = false;
+  userId: string = "";
+  dayNames: string[] = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-  constructor() { }
+  constructor(private reunionesService: ReunionesService,
+              private authService: AuthService) { }
 
-  ngOnInit() {
-    console.log(this.reuniones);
-    if (this.reuniones && this.reuniones.length > 0) {
-      this.selectedDates = this.reuniones.reduce((dates: string[], reunion: Reunion) => {
-        return dates.concat(reunion.fechas_reunion.map(date => this.normalizeDate(date)));
-      }, []);
-    } else if (this.upcomingActivityDates && this.upcomingActivityDates.length > 0) {
-      this.selectedDates = this.upcomingActivityDates.map(date => this.normalizeDate(date));
+  ngOnInit(): void {
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.userId = user.id;
+        console.log('User ID in date-picker component:', this.userId);
+        this.loadReuniones();
+      } else {
+        console.log('User ID not found');
+      }
+    });
+  }
+
+  getMonthFromDate(dateStr: string): string {
+    if (dateStr === '') return '';
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const [day, month] = dateStr.split('-');
+    const monthIndex = parseInt(month, 10) - 1;
+    if (monthIndex >= 0 && monthIndex < 12) {
+      return months[monthIndex];
     } else {
-      const today = new Date();
-      const normalizedToday = this.normalizeDate({
-        id:0,
-        fecha: today.toISOString().split('T')[0],
-        hora_inicio: '00:00:00',
-        hora_fin: '23:59:59'
-      });
-      this.selectedDates.push(normalizedToday);
+      throw new Error('Mes inválido');
     }
-    this.updateCalendar();
-    this.updateSelectedDateFormatted();
+  }
+
+  getCurrentMonth(): string {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const currentDate = new Date();
+    const monthIndex = currentDate.getMonth();
+    return months[monthIndex];
+  }
+
+  private async loadReuniones() {
+    this.loading = true;
+    try {
+      console.log('User ID:', this.userId);
+      if (this.userId !== "") {
+        this.reuniones = await this.reunionesService.obtenerReunionesPorParticipante(this.userId);
+        console.log('Reuniones obtenidas:', this.reuniones);
+        const fechasReunion = this.reuniones.flatMap(reunion => 
+          reunion.fechas_reunion.map(fechaReunion => this.normalizeDate(fechaReunion))
+        );
+        const hoy = new Date();
+        const hoyISO = hoy.toISOString().split('T')[0];
+        this.selectedDates = [hoyISO, ...fechasReunion];
+        this.updateCalendar();
+      } else {
+        console.error('User ID not found');
+      }
+    } catch (error) {
+      console.error('Error al cargar las reuniones:', error);
+    } finally {
+      this.loading = false;
+    }
   }
 
   updateCalendar() {
@@ -50,89 +96,90 @@ export class DatePickerComponent implements OnInit {
     this.selectedDates = this.selectedDates.filter(date => date !== currentDateISO);
   }
 
-  getDaysInMonth() {
+  private getDaysInMonth(): any[] {
+    console.log('Calculando días del mes con:', this.currentMonth); // Log el valor actual del mes
+    
     const days = [];
-    const firstDayOfMonth = new Date(this.selectedDates[0]);
-    const year = firstDayOfMonth.getFullYear();
-    const month = firstDayOfMonth.getMonth();
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const numDaysInMonth = lastDayOfMonth.getDate();
-
-    const firstDayOfWeek = new Date(year, month, 1).getDay();
-
-    if (firstDayOfWeek !== 1) {
-      const prevMonthLastDay = new Date(year, month, 0).getDate();
-      const firstDayOfWeekIndex = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
-      let daysToAdd = firstDayOfWeekIndex === 0 ? 6 : firstDayOfWeekIndex - 1;
-      for (let i = prevMonthLastDay - daysToAdd; i <= prevMonthLastDay; i++) {
-        const prevMonthDate = new Date(year, month - 1, i);
-        const normalizedPrevMonthDate = this.normalizeDate({
-          id:0,
-          fecha: prevMonthDate.toISOString().split('T')[0],
-          hora_inicio: '00:00:00',
-          hora_fin: '23:59:59'
-        });
-        const isSelected = this.selectedDates.includes(normalizedPrevMonthDate);
-        days.push({
-          day: i,
-          date: normalizedPrevMonthDate,
-          isCurrentMonth: false,
-          isToday: this.isToday(normalizedPrevMonthDate),
-          isSelected: isSelected,
-          isSelectable: false
-        });
-      }
+    const [year, month] = this.currentMonth.split('-').map(Number); // Asegúrate de que el split y parseo se realicen correctamente
+    console.log('Año:', year, 'Mes:', month);
+    
+    if (!year || !month) {
+      console.error('Valor inválido para año o mes:', year, month);
+      return [];
     }
-
-    for (let i = 1; i <= numDaysInMonth; i++) {
-      const currentMonthDate = new Date(year, month, i);
-      const normalizedCurrentMonthDate = this.normalizeDate({
-        id:0,
-        fecha: currentMonthDate.toISOString().split('T')[0],
-        hora_inicio: '00:00:00',
-        hora_fin: '23:59:59'
-      });
-      const isSelected = this.selectedDates.includes(normalizedCurrentMonthDate);
-      days.push({
-        day: i,
-        date: normalizedCurrentMonthDate,
-        isCurrentMonth: true,
-        isToday: this.isToday(normalizedCurrentMonthDate),
-        isSelected: isSelected,
-        isSelectable: true
-      });
+    
+    const startDate = new Date(year, month - 1, 1);
+    console.log('Start Date:', startDate);
+    
+    if (isNaN(startDate.getTime())) {
+      console.error('Fecha de inicio inválida:', startDate);
+      return [];
     }
-
-    const lastDayOfWeek = new Date(year, month, numDaysInMonth).getDay();
-    if (lastDayOfWeek !== 0) {
-      const nextMonthFirstDay = new Date(year, month + 1, 1);
-      const nextMonthFirstDayOfWeek = nextMonthFirstDay.getDay();
-      const daysToAdd = 7 - days.length % 7;
-      for (let i = 1; i <= daysToAdd; i++) {
-        const nextMonthDate = new Date(year, month + 1, i);
-        const normalizedNextMonthDate = this.normalizeDate({
-          id:0,
-          fecha: nextMonthDate.toISOString().split('T')[0],
-          hora_inicio: '00:00:00',
-          hora_fin: '23:59:59'
-        });
-        const isSelected = this.selectedDates.includes(normalizedNextMonthDate);
-        days.push({
-          day: i,
-          date: normalizedNextMonthDate,
-          isCurrentMonth: false,
-          isToday: this.isToday(normalizedNextMonthDate),
-          isSelected: isSelected,
-          isSelectable: false
-        });
-      }
+    
+    const endDate = new Date(year, month, 0);
+    console.log('End Date:', endDate);
+    
+    if (isNaN(endDate.getTime())) {
+      console.error('Fecha de fin inválida:', endDate);
+      return [];
     }
-
+  
+    // Obtener el día de la semana del primer día del mes (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+    const startDayOfWeek = startDate.getDay();
+    console.log('Día de la semana del primer día del mes:', startDayOfWeek);
+    
+    // Ajustar el día de la semana para que la semana comience en lunes
+    const adjustedStartDayOfWeek = (startDayOfWeek + 6) % 7; // Convertir Domingo (0) a Lunes (0)
+    console.log('Día ajustado para inicio del mes:', adjustedStartDayOfWeek);
+    
+    // Agregar celdas vacías para los días anteriores al primer día del mes
+    for (let i = 0; i < adjustedStartDayOfWeek; i++) {
+      days.push({ day: '', date: null, isActive: false, isToday: false }); // Celdas vacías
+    }
+  
+    // Obtener la fecha actual
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth() + 1;
+    const todayDate = today.getDate();
+    const formattedToday = `${todayYear}-${todayMonth < 10 ? '0' : ''}${todayMonth}-${todayDate < 10 ? '0' : ''}${todayDate}`;
+    
+    // Recoger todas las fechas de reuniones del mes actual
+    const meetingDatesInMonth = this.reuniones.flatMap(reunion => 
+      reunion.estado === 'activa' ? reunion.fechas_reunion
+        .filter(fecha => {
+          const fechaDate = new Date(fecha.fecha);
+          return fechaDate.getFullYear() === year && fechaDate.getMonth() === month - 1;
+        })
+        .map(fecha => fecha.fecha) : []
+    );
+  
+    console.log('Fechas de reuniones en el mes actual:', meetingDatesInMonth);
+  
+    // Agregar los días del mes
+    for (let i = 1; i <= endDate.getDate(); i++) {
+      const dayDate = new Date(year, month - 1, i);
+      const formattedDate = `${year}-${month < 10 ? '0' : ''}${month}-${i < 10 ? '0' : ''}${i}`;
+      const isActive = meetingDatesInMonth.includes(formattedDate);
+      const isToday = formattedDate === formattedToday;
+      
+      console.log('Día:', dayDate, 'Activo:', isActive, 'Hoy:', isToday);
+      days.push({ day: i, date: dayDate, isActive: isActive, isToday: isToday });
+    }
+    
     return days;
   }
+  
+  
+  
+  
+  
+  
 
-  normalizeDate(date: FechaReunion): string {
-    return `${date.fecha}T${date.hora_inicio}`;
+  private normalizeDate(date: FechaReunion): string {
+    const fecha = new Date(`${date.fecha}T${date.hora_inicio}`);
+    fecha.setHours(fecha.getHours() + 4);
+    return fecha.toISOString().split('T')[0];
   }
 
   toggleCalendar() {
@@ -140,26 +187,56 @@ export class DatePickerComponent implements OnInit {
   }
 
   updateMonth() {
-    const firstDayOfMonth = new Date(this.selectedDates[0]);
-    const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    this.currentMonth = monthNames[firstDayOfMonth.getMonth()] + ' ' + firstDayOfMonth.getFullYear();
+    console.log('Actualizando mes');
+  
+    let año: number;
+    let mes: number;
+  
+    // Verificar si currentMonth es válido
+    if (this.currentMonth && this.currentMonth.split('-').length === 2) {
+      [año, mes] = this.currentMonth.split('-').map(Number);
+      
+      // Validar que año y mes sean válidos
+      if (isNaN(año) || isNaN(mes) || mes < 1 || mes > 12) {
+        console.error('Valor inválido para año o mes:', año, mes);
+        // Usar la fecha actual si currentMonth no es válido
+        const fechaActual = new Date();
+        año = fechaActual.getFullYear();
+        mes = fechaActual.getMonth() + 1;
+      }
+    } else {
+      // Usar la fecha actual si currentMonth no está definido
+      const fechaActual = new Date();
+      año = fechaActual.getFullYear();
+      mes = fechaActual.getMonth() + 1;
+    }
+  
+    // Formatear mes para que tenga dos dígitos
+    this.currentMonth = `${año}-${mes < 10 ? '0' : ''}${mes}`;
+    console.log('Mes Actual:', this.currentMonth);
+  
+    // Actualiza la fecha seleccionada formateada
+    if (this.selectedDates.length > 0) {
+      this.updateSelectedDateFormatted(this.selectedDates[0]);
+    }
   }
+  
+  
 
-  updateSelectedDateFormatted() {
-    const today = new Date();
-    const dayOfWeekNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    
-    const dayOfWeek = dayOfWeekNames[today.getDay()];
-    const dayOfMonth = today.getDate();
-    const month = monthNames[today.getMonth()];
-    const year = today.getFullYear();
-    
-    this.selectedDateFormatted = `${dayOfWeek} ${dayOfMonth} de ${month} de ${year}`;
+  updateSelectedDateFormatted(selectedDate: string) {
+    const fecha = new Date(selectedDate);
+    fecha.setHours(fecha.getHours() + 4);
+    const nombresDias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const diaSemana = nombresDias[fecha.getDay()];
+    const diaDelMes = fecha.getDate();
+    const mes = nombresMeses[fecha.getMonth()];
+    const año = fecha.getFullYear();
+    this.selectedDateFormatted = `${diaSemana}, ${diaDelMes} de ${mes} de ${año}`;
   }
 
   selectDay(day: any) {
+    console.log('Before selectDay', this.selectedDates);
     if (this.allowSelection) {
       if (day.isSelected) {
         day.isSelected = false;
@@ -168,31 +245,24 @@ export class DatePickerComponent implements OnInit {
         day.isSelected = true;
         this.selectedDates.push(day.date);
       }
-      this.updateSelectedDateFormatted();
+      this.updateSelectedDateFormatted(day.date);
     }
+    console.log('After selectDay', this.selectedDates);
   }
 
   prevMonth() {
-    const firstDayOfMonth = new Date(this.selectedDates[0]);
+    const [year, month] = this.currentMonth.split('-').map(Number);
+    const firstDayOfMonth = new Date(year, month - 1, 1);
     firstDayOfMonth.setMonth(firstDayOfMonth.getMonth() - 1);
-    this.selectedDates[0] = this.normalizeDate({
-      id:0,
-      fecha: firstDayOfMonth.toISOString().split('T')[0],
-      hora_inicio: '00:00:00',
-      hora_fin: '23:59:59'
-    });
+    this.currentMonth = `${firstDayOfMonth.getFullYear()}-${firstDayOfMonth.getMonth() + 1 < 10 ? '0' : ''}${firstDayOfMonth.getMonth() + 1}`;
     this.updateCalendar();
   }
 
   nextMonth() {
-    const firstDayOfMonth = new Date(this.selectedDates[0]);
+    const [year, month] = this.currentMonth.split('-').map(Number);
+    const firstDayOfMonth = new Date(year, month - 1, 1);
     firstDayOfMonth.setMonth(firstDayOfMonth.getMonth() + 1);
-    this.selectedDates[0] = this.normalizeDate({
-      id:0,
-      fecha: firstDayOfMonth.toISOString().split('T')[0],
-      hora_inicio: '00:00:00',
-      hora_fin: '23:59:59'
-    });
+    this.currentMonth = `${firstDayOfMonth.getFullYear()}-${firstDayOfMonth.getMonth() + 1 < 10 ? '0' : ''}${firstDayOfMonth.getMonth() + 1}`;
     this.updateCalendar();
   }
 
@@ -202,22 +272,16 @@ export class DatePickerComponent implements OnInit {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     for (const selectedDate of this.selectedDates) {
-      const currentDate = new Date(selectedDate);
-      if (currentDate >= firstDayOfMonth && currentDate <= lastDayOfMonth) {
+      const dateObject = new Date(selectedDate);
+      if (dateObject >= firstDayOfMonth && dateObject <= lastDayOfMonth) {
         return true;
       }
     }
     return false;
   }
 
-  isToday(date: string): boolean {
-    const today = new Date().toISOString().split('T')[0];
-    return date === today;
-  }
   capitalizeFirstLetter(text: string): string {
-    if (text && text.length > 0) {
-      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-    }
-    return '';
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 }

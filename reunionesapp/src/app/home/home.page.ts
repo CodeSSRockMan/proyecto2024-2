@@ -14,7 +14,7 @@ export class HomePage implements OnInit {
   upcomingActivityDates: Date[] = [];
   userCreatedActivities: { date: Date, description: string, lugar: string }[] = [];
   participantActivities: { date: Date, description: string, lugar: string }[] = [];
-
+  participantReuniones: Reunion[] = [];
   noActivitiesCreatedByUser: boolean = false;
   noActivitiesParticipant: boolean = false;
   reuniones: Reunion[] = [];
@@ -108,9 +108,10 @@ export class HomePage implements OnInit {
   try {
     this.reuniones = await this.reunionesService.obtenerReuniones();
     const currentUserId = this.authService.getCurrentUserId();
-
+    
     this.noActivitiesCreatedByUser = !this.reuniones.some(r => r.created_by === currentUserId);
-    this.noActivitiesParticipant = !this.reuniones.some(r => r.created_by !== currentUserId);
+    this.participantReuniones = await this.reunionesService.obtenerReunionesPorParticipante(currentUserId);
+    this.noActivitiesParticipant = this.participantReuniones.length === 0;
   } catch (error) {
     console.error('Error loading reuniones:', error);
   }
@@ -182,12 +183,18 @@ export class HomePage implements OnInit {
     formatDate(fechas_reunion: FechaReunion[]): string[] {
       return fechas_reunion.map(fecha => {
         const fechaObj = new Date(fecha.fecha);
+        fechaObj.setHours(fechaObj.getHours() + 4); // Sumar 4 horas
+    
         const horaInicio = new Date(`1970-01-01T${fecha.hora_inicio}`);
         const horaFin = new Date(`1970-01-01T${fecha.hora_fin}`);
+    
+        // Sumar 4 horas a las horas de inicio y fin
+        horaInicio.setHours(horaInicio.getHours() + 4);
+        horaFin.setHours(horaFin.getHours() + 4);
+    
         return `${fechaObj.toLocaleDateString()} ${horaInicio.toLocaleTimeString()} - ${horaFin.toLocaleTimeString()}`;
       });
     }
-  
   
   formatSingleDate(date: string | Date): string {
 

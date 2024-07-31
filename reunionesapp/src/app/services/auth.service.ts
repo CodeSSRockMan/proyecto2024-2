@@ -10,8 +10,9 @@ import { Router } from '@angular/router';
 export class AuthService {
   private supabase: SupabaseClient;
   private userSubject = new BehaviorSubject<any>(null);
-  private currentUserId: string | null = null;
+  private currentUserId: string ="";
   user$ = this.userSubject.asObservable();
+  
 
   constructor(private router: Router) {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
@@ -19,11 +20,13 @@ export class AuthService {
   }
 
   getCurrentUserId(): string {
-    return this.currentUserId || ''; // Proporciona un valor predeterminado si `currentUserId` es `null`
+    const userId = this.currentUserId ?? localStorage.getItem('userId') ?? '';
+    console.log('Retrieved userId:', userId);
+    return userId;
   }
 
+
   async register(email: string, password: string, username: string, phone: string) {
-    // Verificar si el correo electrónico o el teléfono ya están registrados
     const { data: existingUser, error: fetchError } = await this.supabase
       .from('usuarios')
       .select('*')
@@ -38,7 +41,6 @@ export class AuthService {
       throw new Error('El correo electrónico o el número de teléfono ya están registrados.');
     }
 
-    // Registrar el nuevo usuario
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password
@@ -48,7 +50,6 @@ export class AuthService {
       throw error;
     }
 
-    // Guardar información adicional en la base de datos
     await this.supabase.from('usuarios').insert([
       { email, username, phone }
     ]);
@@ -57,60 +58,90 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string): Promise<any> {
+    console.log('Signing in user:', { email });
+
     if (!email || !password) {
       throw new Error('El correo electrónico y la contraseña son obligatorios.');
     }
-  
+
     const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
-  
+
     if (error) {
-      console.error('Error durante el inicio de sesión:', error.message);
+      console.error('Error during sign-in:', error.message);
       throw new Error('Error al iniciar sesión. Verifique su correo electrónico y contraseña.');
     }
-  
+
     if (data.user) {
+      console.log('User signed in:', data.user);
       this.userSubject.next(data.user);
-  
-      // Actualiza los detalles del usuario y el ID
       await this.updateUserDetails(data.user);
-  
-      console.log('Usuario autenticado:', data.user);
       return data.user;
     } else {
       throw new Error('No se pudo autenticar el usuario.');
     }
   }
-  
+
   private async updateUserDetails(user: any) {
+    console.log('Updating user details for:', user.email);
+
     const { data, error } = await this.supabase
       .from('usuarios')
-      .select('username, email, phone, id') // Asegúrate de incluir el campo 'id'
+      .select('username, email, phone, id')
       .eq('email', user.email)
       .single();
   
     if (error) {
-      console.error('Error al obtener detalles del usuario:', error.message);
+      console.error('Error fetching user details:', error.message);
       throw new Error('Error al obtener detalles del usuario.');
     }
   
-    // Actualiza el estado del usuario y el ID
+    console.log('User details retrieved:', data);
     this.userSubject.next({ ...user, ...data });
-    this.currentUserId = data.id; // Guarda el ID del usuario
+    this.currentUserId = data.id;
+    console.log('Storing userId in localStorage:', this.currentUserId);
+    localStorage.setItem('userId', this.currentUserId); // Guardar el ID en localStorage
   }
 
   async signOut() {
-    const { error } = await this.supabase.auth.signOut(); // Cierra sesión en Supabase
+    const { error } = await this.supabase.auth.signOut();
     if (error) {
       throw error;
     }
-    localStorage.removeItem('auth-token'); // Elimina el token de autenticación del almacenamiento local
-    this.userSubject.next(null); // Limpiar el estado del usuario
-    this.router.navigate(['/login']); // Redirige al usuario a la página de inicio de sesión
+    localStorage.removeItem('userId'); // Eliminar el ID del almacenamiento local
+    this.userSubject.next(null);
+    this.currentUserId = ""; // Limpiar el ID del usuario
+    this.router.navigate(['/login']);
   }
 
   async loadUser() {
-    const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+    console.log('Loading user...');
+
+    const storedUserId = localStorage.getItem('userId');
+    console.log('Stored userId from localStorage:', storedUserId);
   
+    if (storedUserId) {
+      const { data: userDetails, error: userError } = await this.supabase
+        .from('usuarios')
+        .select('username, email, id')
+        .eq('id', storedUserId)
+        .single();
+  
+      if (userError) {
+        console.error('Error fetching user details:', userError);
+        this.userSubject.next(null);
+        localStorage.removeItem('userId');
+        return;
+      }
+  
+      console.log('User details loaded:', userDetails);
+      this.userSubject.next(userDetails);
+      this.currentUserId = userDetails.id;
+      return;
+    }
+  
+    const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+    console.log('Session data:', session);
+
     if (sessionError) {
       console.error('Error fetching session:', sessionError);
       this.userSubject.next(null);
@@ -130,15 +161,18 @@ export class AuthService {
         return;
       }
   
-      // Actualiza el estado del usuario con los detalles completos
+      console.log('User details from session:', userDetails);
       this.userSubject.next({
         ...session.user,
         ...userDetails
       });
-      this.currentUserId = userDetails.id; // Guarda el ID del usuario
+      this.currentUserId = userDetails.id;
+      console.log('Storing userId in localStorage:', this.currentUserId);
+      localStorage.setItem('userId', this.currentUserId);
     } else {
+      console.log('No user session found.');
       this.userSubject.next(null);
-      this.currentUserId = null; // Limpia el ID del usuario si no hay sesión
+      this.currentUserId = "";
     }
   }
 
@@ -148,15 +182,14 @@ export class AuthService {
       .select('id, username, phone, email')
       .or(`email.eq.${correo},phone.eq.${telefono}`)
       .single();
-    
+
     if (error) {
       console.error('Error buscando usuario:', error);
       throw error;
     }
-    
+
     return data;
   }
-  
 
   async getUserDetails() {
     const user = this.userSubject.value;

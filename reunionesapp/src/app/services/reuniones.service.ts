@@ -4,6 +4,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
 
+
 export interface Participante {
   id: number;
   nombre: string;
@@ -354,7 +355,21 @@ export class ReunionesService {
     }
   }
   async obtenerReunionesPorParticipante(usuarioId: string): Promise<Reunion[]> {
-    const { data: supabaseData, error } = await this.supabase
+    // Primero, obtener los IDs de las reuniones donde el usuario es participante
+    const { data: participantesData, error: participantesError } = await this.supabase
+      .from('participantes')
+      .select('reunion_id')
+      .eq('usuario_id', usuarioId);
+    
+    if (participantesError) {
+      console.error('Error fetching participante reuniones:', participantesError);
+      return [];
+    }
+
+    const reunionIds = participantesData.map((p: { reunion_id: number }) => p.reunion_id);
+
+    // Luego, obtener las reuniones usando los IDs obtenidos
+    const { data: reunionesData, error: reunionesError } = await this.supabase
       .from('reuniones')
       .select(`
         id,
@@ -365,13 +380,13 @@ export class ReunionesService {
         tipo,
         codigo_invitacion,
         created_by,
-        fechas_tentativas: fechas_tentativas (
+        fechas_tentativas (
           id,
           fecha,
           hora_inicio,
           hora_fin
         ),
-        participantes: participantes (
+        participantes (
           id,
           nombre,
           telefono,
@@ -379,18 +394,15 @@ export class ReunionesService {
           reunion_id
         )
       `)
-      .contains('participantes', [{ usuario_id: usuarioId }]);
+      .in('id', reunionIds);
     
-    // Log de los datos crudos obtenidos de Supabase
-    console.log('Datos obtenidos de Supabase para reuniones por participante:', supabaseData);
-  
-    if (error) {
-      console.error('Error fetching reuniones for participante:', error);
+    if (reunionesError) {
+      console.error('Error fetching reuniones for participante:', reunionesError);
       return [];
     }
-  
+
     // Transformar los datos
-    const reuniones: Reunion[] = supabaseData.map((data: any) => ({
+    const reuniones: Reunion[] = reunionesData.map((data: any) => ({
       id: data.id,
       motivo: data.motivo,
       comentarios: data.comentarios,
@@ -402,13 +414,10 @@ export class ReunionesService {
       fechas_reunion: data.fechas_tentativas,
       participantes: data.participantes
     }));
-  
-    // Log de los datos transformados
-    console.log('Datos transformados para reuniones por participante:', reuniones);
-  
+
     return reuniones;
   }
-  
+
   
   async obtenerReunionesPorCreador(usuarioId: string): Promise<Reunion[]> {
     const { data: supabaseData, error } = await this.supabase

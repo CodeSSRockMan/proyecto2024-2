@@ -1,5 +1,4 @@
 <ion-content [fullscreen]="true" class="ion-padding">
-
   <!-- Calendario -->
   <div class="calendar-container">
     <ion-card>
@@ -23,29 +22,27 @@
         <ion-item *ngFor="let reunion of reuniones" (click)="verDetalles(reunion)">
           <ion-label *ngIf="reunion.created_by && isValidReunion(reunion)">
             <div class="chip-container">
-              <!-- Chip para indicar si es presencial o digital -->
+              <!-- Chips for meeting type, location, and status -->
               <ion-chip *ngIf="reunion.tipo">
                 <ion-icon [name]="reunion.tipo === 'Presencial' ? 'business-outline' : 'globe-outline'"></ion-icon>
                 <ion-label>{{ reunion.tipo }}</ion-label>
               </ion-chip>
-  
-              <!-- Chip para la dirección o plataforma -->
+
               <ion-chip *ngIf="reunion.ubicacion">
                 <ion-icon [name]="reunion.tipo === 'Presencial' ? 'location-outline' : getIconForPlatform(reunion.ubicacion)"></ion-icon>
                 <ion-label>{{ reunion.ubicacion }}</ion-label>
               </ion-chip>
-  
-              <!-- Chip para el estado de la reunión -->
+
               <ion-chip *ngIf="reunion.estado">
                 <ion-icon name="information-circle-outline"></ion-icon>
                 <ion-label>{{ reunion.estado }}</ion-label>
               </ion-chip>
             </div>
-  
+
             <div class="ion-text-wrap">
               <h2 *ngFor="let line of formatDate(reunion.fechas_reunion)">{{ line }}</h2>
             </div>
-            
+
             <div class="location-container">
               <p>{{ reunion.motivo }}</p>
             </div>
@@ -66,8 +63,8 @@
   <ion-card class="activity-list">
     <ion-card-content>
       <ion-list *ngIf="!noActivitiesParticipant">
-        <ion-item *ngFor="let reunion of reuniones" (click)="verParticipantes(reunion)">
-          <ion-label *ngIf="!reunion.created_by && isValidReunion(reunion)">
+        <ion-item *ngFor="let reunion of participantReuniones" (click)="verParticipantes(reunion)">
+          <ion-label *ngIf="isValidReunion(reunion)">
             <div class="ion-text-wrap">
               <div>{{ formatDate(reunion.fechas_reunion)[0] }}</div>
               <div *ngFor="let line of formatDate(reunion.fechas_reunion).slice(1)">
