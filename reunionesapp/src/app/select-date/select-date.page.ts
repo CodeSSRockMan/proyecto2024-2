@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 import { formatDate, registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ReunionesService, Reunion, FechaReunion } from '../services/reuniones.service';
+import { NavigationStart, NavigationEnd } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 // Importa los módulos de internacionalización
 registerLocaleData(localeEs);
@@ -13,97 +16,138 @@ registerLocaleData(localeEs);
   styleUrls: ['./select-date.page.scss'],
 })
 export class SelectDatePage implements OnInit {
-  selectedDates: Date[] = [];
-  tentativeDates: { startDate: Date, endDate: Date ,selected: boolean}[] = []; // Aquí debes cargar las fechas disponibles
+  selectedDates: FechaReunion[] = [];
+  tentativeDates: FechaReunion[] = []; // Fechas tentativas de la reunión
   showThankYouMessage: boolean = false;
-  groupCreatorName: string = 'Juan Pérez'; // Nombre por defecto
-  meetingName: string = 'Nombre de la Reunión'; // Nombre de la reunión
+  groupCreatorName: string = ""; // Nombre por defecto
+  meetingName: string = ""; // Nombre de la reunión
   meetingPurpose: string = 'Motivo de la Reunión'; // Motivo de la reunión
   noneOfTheDatesWork: boolean = false;
   submitButtonDisabled: boolean = true;
+  reunionId!: number; // ID de la reunión
+  usuarioActualId: string = "";
 
   constructor(
     private alertController: AlertController,
     private toastController: ToastController,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private reunionesService: ReunionesService, // Servicio de Reuniones
+    private authService: AuthService
   ) {
-    // Datos de prueba para mostrar en la página
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfterTomorrow = new Date(now);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
 
-    this.tentativeDates = [
-      { startDate: new Date(now), endDate: new Date(now.setHours(now.getHours() + 2)),selected:false },
-      { startDate: new Date(tomorrow), endDate: new Date(tomorrow.setHours(tomorrow.getHours() + 2)),selected:false },
-      { startDate: new Date(dayAfterTomorrow), endDate: new Date(dayAfterTomorrow.setHours(dayAfterTomorrow.getHours() + 2)),selected:false }
-    ];
-    this.selectedDates = []; // o cualquier valor inicial deseado
   }
 
-  ngOnInit() {
-    
+  async ngOnInit() {
+
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.usuarioActualId = user.id;
+        console.log('User ID in date-picker component:', this.usuarioActualId);
+      } else {
+        console.log('User ID not found');
+      }
+    });
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        // No hacer nada
+      } else if (event instanceof NavigationEnd) {
+        // Recuperar el estado al navegar a la página
+        const navigation = this.router.getCurrentNavigation();
+        if (navigation?.extras.state) {
+          this.reunionId = navigation.extras.state['reunionId'];
+          console.log('reunionId en ngOnInit:', this.reunionId); // Verifica el valor del ID
+          if (this.reunionId) {
+            this.loadMeetingDetails(this.reunionId);
+          }
+        }
+      }
+    });
+  }
+
+  async loadMeetingDetails(id: number) {
+    try {
+      const reunion = await this.reunionesService.obtenerReunionPorId(id);
+      console.log(reunion);
+      if (reunion) {
+        // Actualiza el nombre y el propósito de la reunión
+        this.meetingName = reunion.motivo;
+        this.meetingPurpose = reunion.comentarios;
+        this.groupCreatorName = await this.authService.obtenerNombreUsuarioPorId(reunion.created_by); // Suponiendo que es el creador del grupo
+
+        // Cargar las fechas tentativas directamente
+        this.tentativeDates = reunion.fechas_reunion;
+
+        // Verificar las fechas seleccionadas
+        const selectedDateIds = reunion.participantes.flatMap(participant =>
+          participant.fechasSeleccionadas?.map(fs => fs.id) || []
+        );
+
+        // Mapeamos las fechas seleccionadas basándonos en las IDs
+        this.selectedDates = this.tentativeDates.filter(fecha =>
+          selectedDateIds.includes(fecha.id)
+        );
+      }
+    } catch (error) {
+      console.error('Error loading meeting details:', error);
+    }
   }
 
   toggleNoneOfTheDatesWork(checked: boolean) {
-
     this.noneOfTheDatesWork = checked;
-  
-    // Deseleccionar automáticamente las otras opciones si esta está seleccionada
+
     if (checked) {
-      // Desactiva la selección de todas las fechas tentativas
-      this.tentativeDates.forEach(date => {
-        date.selected = false;
-      });
+      this.selectedDates = [];
     } else {
-      // Si la opción "No puedo asistir en ninguna de estas fechas" no está seleccionada,
-      // restablece el estado de selección de las fechas tentativas según la selección actual de fechas.
-      const selectedDatesTimestamps = this.selectedDates.map(d => d.getTime());
-      this.tentativeDates.forEach(date => {
-        date.selected = selectedDatesTimestamps.includes(date.startDate.getTime());
-      });
+      this.selectedDates = this.tentativeDates.filter(d =>
+        this.selectedDates.some(selectedDate => selectedDate.id === d.id)
+      );
     }
-  
-    // Deshabilitar el botón de enviar si ninguna fecha está seleccionada
+
     this.updateSubmitButtonStatus();
   }
-  
+
   updateSubmitButtonStatus() {
-    this.selectedDates.length === 0 && !this.noneOfTheDatesWork ? this.submitButtonDisabled = true : this.submitButtonDisabled = false;
+    this.submitButtonDisabled = this.selectedDates.length === 0 && !this.noneOfTheDatesWork;
   }
-  
-  toggleSelectedDate(date: Date) {
+
+  toggleSelectedDate(fecha: FechaReunion) {
     if (this.noneOfTheDatesWork) {
-      // Si la opción "No puedo asistir en ninguna de estas fechas" está seleccionada, no permitas la selección de otras fechas
       return;
     }
-  
-    const index = this.selectedDates.findIndex(d => d.getTime() === date.getTime());
+
+    const index = this.selectedDates.findIndex(d => d.id === fecha.id);
     if (index === -1) {
-      // Si la fecha no está seleccionada, agrégala al arreglo
-      this.selectedDates.push(date);
+      this.selectedDates.push(fecha);
     } else {
-      // Si la fecha ya está seleccionada, elimínala del arreglo
       this.selectedDates.splice(index, 1);
     }
-  
-    // Actualiza el estado de selección de las fechas tentativas
-    this.tentativeDates.forEach(d => {
-      d.selected = this.selectedDates.some(selectedDate => selectedDate.getTime() === d.startDate.getTime());
-    });
-  
-    // Deshabilitar el botón de enviar si ninguna fecha está seleccionada
+
     this.updateSubmitButtonStatus();
   }
 
-  isSelectedDate(date: Date): boolean {
-    return this.selectedDates.findIndex(d => d.getTime() === date.getTime()) !== -1;
+  isSelectedDate(fecha: FechaReunion): boolean {
+    return this.selectedDates.some(d => d.id === fecha.id);
   }
 
-  formatDate(date: Date): string {
-    const formattedDate = formatDate(date, 'EEEE d \'de\' MMMM \'de\' yyy', 'es');
+  formatDate(date: string): string {
+    // Crear un objeto Date con la fecha original
+    const originalDate = new Date(date);
+  
+    // Sumar 4 horas a la fecha
+    const adjustedDate = this.addHours(originalDate, 4);
+  
+    // Formatear la fecha ajustada
+    const formattedDate = formatDate(adjustedDate, 'EEEE d \'de\' MMMM \'de\' yyyy', 'es');
+    
+    // Capitalizar la primera letra
     return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+  }
+
+  addHours(date: Date, hours: number): Date {
+    const result = new Date(date);
+    result.setHours(result.getHours() + hours);
+    return result;
   }
 
   async presentConfirmationAlert() {
@@ -136,39 +180,6 @@ export class SelectDatePage implements OnInit {
     await toast.present();
   }
 
-  async submitVote() {
-    if (this.noneOfTheDatesWork) {
-      console.log("Nada a enviar");
-      // Permite enviar la selección si se ha marcado que ninguna de las fechas es adecuada
-      const confirmed = await this.presentConfirmationAlert();
-      if (confirmed) {
-        await this.presentThankYouToast();
-        setTimeout(() => {
-          // Redirige después de 3 segundos
-          this.router.navigateByUrl('/login'); // O a la página de inicio según el usuario
-        }, 3000);
-      }
-    } else {
-      // Si no se ha marcado que ninguna de las fechas es adecuada, requerimos que al menos una fecha sea seleccionada
-      if (this.selectedDates.length === 0) {
-        // Muestra un mensaje de error si ninguna fecha está seleccionada
-        await this.presentErrorToast();
-        return;
-      }
-      console.log("Fechas seleccionadas:", this.selectedDates);
-      const confirmed = await this.presentConfirmationAlert();
-      if (confirmed) {
-
-        
-        await this.presentThankYouToast();
-        setTimeout(() => {
-          // Redirige después de 3 segundos
-          this.router.navigateByUrl('/login'); // O a la página de inicio según el usuario
-        }, 3000);
-      }
-    }
-  }
-
   async presentErrorToast() {
     const toast = await this.toastController.create({
       message: 'Debes seleccionar al menos una fecha.',
@@ -176,6 +187,41 @@ export class SelectDatePage implements OnInit {
       position: 'middle'
     });
     await toast.present();
-}
+  }
 
+  async submitVote() {
+    try {
+      if (this.noneOfTheDatesWork) {
+        const confirmed = await this.presentConfirmationAlert();
+        if (confirmed) {
+          // Enviar solo el ID del participante y un arreglo vacío de fechas seleccionadas
+          await this.reunionesService.actualizarParticipacion((await this.reunionesService.obtenerParticipantePorIDReunionYIdUsuario2(this.reunionId,this.usuarioActualId)).id, []);
+          await this.presentThankYouToast();
+          setTimeout(() => {
+            this.router.navigateByUrl('/home'); // O a la página de inicio según el usuario
+          }, 3000);
+        }
+      } else {
+        if (this.selectedDates.length === 0) {
+          await this.presentErrorToast();
+          return;
+        }
+        const confirmed = await this.presentConfirmationAlert();
+        if (confirmed) {
+          // Extraer solo los IDs de las fechas seleccionadas
+          const selectedDateIds = this.selectedDates.map(d => d.id);
+  
+          // Enviar solo el ID del participante y un arreglo vacío de fechas seleccionadas
+          await this.reunionesService.actualizarParticipacion((await this.reunionesService.obtenerParticipantePorIDReunionYIdUsuario2(this.reunionId,this.usuarioActualId)).id, this.selectedDates);
+          await this.presentThankYouToast();
+          setTimeout(() => {
+            this.router.navigateByUrl('/home'); // O a la página de inicio según el usuario
+          }, 3000);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+      await this.presentErrorToast();
+    }
+  }
 }

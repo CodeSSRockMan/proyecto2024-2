@@ -4,7 +4,11 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
 
-
+export interface ParticipanteFecha {
+  participante_id: number;
+  fecha_tentativa_id: number;
+  opcion_nula: boolean;
+}
 export interface Participante {
   id: number;
   nombre: string;
@@ -59,6 +63,12 @@ interface SupabaseReunion {
     reunion_id: number;
   }[];
 }
+interface FormattedFechaReunion {
+  id: number; // ID de la fecha tentativa
+  startDate: Date;
+  endDate: Date;
+  selected: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -69,6 +79,153 @@ export class ReunionesService {
   constructor(private authService: AuthService) {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
   }
+
+  async obtenerParticipantePorIDReunionYIdUsuario(reunionID: number, usuarioID: string) {
+    try {
+      // Obtener todas las fechas tentativas para la reunión especificada
+      const { data: fechasReunion, error: fechasError } = await this.supabase
+        .from('fechas_tentativas')
+        .select('id')
+        .eq('reunion_id', reunionID);
+  
+      if (fechasError) {
+        console.error('Error al obtener las fechas de la reunión:', fechasError);
+        throw fechasError;
+      }
+      console.log(fechasReunion);
+      // Si no hay fechas, retornamos un arreglo vacío
+      if (!fechasReunion || fechasReunion.length === 0) {
+        return null;
+      }
+  
+      // Obtener los participantes que han votado por cada fecha de la reunión
+      const participantes: any[] = [];
+  
+      for (const fecha of fechasReunion) {
+        const participantesQueVotaron = await this.obtenerParticipantesQueVotaron(fecha.id);
+        // Filtrar el participante por el ID de usuario
+        const participante = participantesQueVotaron.find(p => p.usuario_id === usuarioID);
+        if (participante) {
+          return participante;
+        }
+      }
+  
+      // Si no encontramos el participante, retornamos null
+      return null;
+    } catch (error) {
+      console.error('Error en obtenerParticipantePorIDReunionYIdUsuario:', error);
+      return null;
+    }
+  }
+
+  async obtenerParticipantePorIDReunionYIdUsuario2(reunionID: number, usuarioID: string) {
+    try {
+      // Obtener el participante por ID de reunión y ID de usuario
+      const { data: participante, error } = await this.supabase
+        .from('participantes')
+        .select('*')
+        .eq('reunion_id', reunionID)
+        .eq('usuario_id', usuarioID)
+        .single();
+  
+      if (error) {
+        console.error('Error al obtener el participante:', error);
+        throw error;
+      }
+  
+      return participante;
+    } catch (error) {
+      console.error('Error en obtenerParticipantePorIDReunionYIdUsuario:', error);
+      return null;
+    }
+  }
+
+  async obtenerParticipantesQueVotaron(fechaId: number): Promise<any[]> {
+    try {
+      // Consulta para obtener los IDs de los participantes que votaron por la fecha especificada
+      const { data: participantesFechas, error: fechasError } = await this.supabase
+        .from('participante_fechas')
+        .select('participante_id')
+        .eq('fecha_tentativa_id', fechaId);
+  
+      if (fechasError) {
+        console.error('Error al obtener los IDs de los participantes:', fechasError);
+        throw fechasError;
+      }
+  
+      // Si no hay IDs de participantes, retornamos un arreglo vacío
+      if (!participantesFechas || participantesFechas.length === 0) {
+        return [];
+      }
+  
+      // Extraer los IDs de los participantes
+      const participanteIDs = participantesFechas.map(pf => pf.participante_id);
+  
+      // Consulta para obtener los detalles de los participantes
+      const { data: participantes, error: participantesError } = await this.supabase
+        .from('participantes')
+        .select('*')
+        .in('id', participanteIDs);
+  
+      if (participantesError) {
+        console.error('Error al obtener los detalles de los participantes:', participantesError);
+        throw participantesError;
+      }
+  
+      return participantes;
+    } catch (error) {
+      console.error('Error en obtenerParticipantesQueVotaron:', error);
+      return [];
+    }
+  }
+  
+
+  async actualizarParticipacion(participanteId: number, fechasSeleccionadas: FechaReunion[]): Promise<any> {
+    // Lista para almacenar las inserciones
+    const inserts = fechasSeleccionadas.length > 0
+      ? fechasSeleccionadas.map(fecha => ({
+          participante_id: participanteId,
+          fecha_tentativa_id: fecha.id,
+          opcion_nula: false
+        }))
+      : [{
+          participante_id: participanteId,
+          fecha_tentativa_id: null, // o cualquier valor nulo que la base de datos permita
+          opcion_nula: true
+        }];
+  
+    // Realizar la inserción en la base de datos
+    const { data, error } = await this.supabase
+      .from('participante_fechas')
+      .upsert(inserts); // Usar upsert para insertar o actualizar si ya existe
+  
+    if (error) {
+      console.error('Error inserting or updating:', error);
+      throw error;
+    }
+  
+    return data;
+  }
+
+  
+
+  async obtenerFechasTentativasPorIdReunion(reunionId: number): Promise<FechaReunion[]> {
+    // Consultar la tabla 'fechas_tentativas' para obtener las fechas relacionadas con la reunión
+    const { data, error } = await this.supabase
+      .from('fechas_tentativas')
+      .select('id, fecha, hora_inicio, hora_fin')
+      .eq('reunion_id', reunionId);
+  
+    // Manejo de errores de la consulta
+    if (error) {
+      console.error('Error al obtener fechas tentativas por ID de reunión:', error);
+      return [];
+    }
+  
+    // Devolver los datos obtenidos sin transformarlos
+    return data;
+  }
+  
 
   async obtenerReuniones(): Promise<Reunion[]> {
     const { data: supabaseData, error } = await this.supabase
@@ -164,7 +321,12 @@ export class ReunionesService {
           nombre,
           telefono,
           usuario_id,
-          reunion_id
+          reunion_id,
+          participante_fechas: participante_fechas(
+            participante_id,
+            fecha_tentativa_id,
+            opcion_nula
+          )
         )
       `)
       .eq('id', id)
@@ -175,10 +337,20 @@ export class ReunionesService {
       return null;
     }
   
-    // Log para verificar el formato de los datos
-    console.log('Datos obtenidos para una reunión por ID:', data);
+    const participantesConFechas: Participante[] = data.participantes.map((participante: any) => {
+      const fechasSeleccionadas = participante.participante_fechas?.map((pf: any) => ({
+        id: pf.fecha_tentativa_id,
+        fecha: data.fechas_tentativas.find((f: any) => f.id === pf.fecha_tentativa_id)?.fecha,
+        hora_inicio: data.fechas_tentativas.find((f: any) => f.id === pf.fecha_tentativa_id)?.hora_inicio,
+        hora_fin: data.fechas_tentativas.find((f: any) => f.id === pf.fecha_tentativa_id)?.hora_fin,
+      })) || [];
   
-    // Asegúrate de que los datos coincidan con la interfaz Reunion
+      return {
+        ...participante,
+        fechasSeleccionadas
+      };
+    });
+  
     return {
       id: data.id,
       motivo: data.motivo,
@@ -189,9 +361,12 @@ export class ReunionesService {
       codigo_invitacion: data.codigo_invitacion === null ? undefined : data.codigo_invitacion,
       created_by: data.created_by,
       fechas_reunion: data.fechas_tentativas,
-      participantes: data.participantes
+      participantes: participantesConFechas
     };
   }
+  
+  
+  
   
 
   async checkInvitationCodeExists(codigo: string): Promise<boolean> {

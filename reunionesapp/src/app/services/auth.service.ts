@@ -81,6 +81,22 @@ export class AuthService {
     }
   }
 
+  // Nuevo método para obtener el nombre del usuario
+  async obtenerNombreUsuarioPorId(userId: string): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('usuarios')
+      .select('username')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user name:', error);
+      throw error;
+    }
+
+    return data.username;
+  }
+
   private async updateUserDetails(user: any) {
     console.log('Updating user details for:', user.email);
 

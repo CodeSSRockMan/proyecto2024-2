@@ -225,7 +225,7 @@ export class DatePickerComponent implements OnInit {
 
   updateSelectedDateFormatted(selectedDate: string) {
     const fecha = new Date(selectedDate);
-    fecha.setHours(fecha.getHours() + 4);
+    fecha.setHours(fecha.getHours() );
     const nombresDias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     const diaSemana = nombresDias[fecha.getDay()];

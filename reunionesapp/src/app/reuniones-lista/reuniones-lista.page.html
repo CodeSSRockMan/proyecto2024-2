@@ -1,5 +1,4 @@
 <ion-header [translucent]="true">
-  
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/"></ion-back-button>
@@ -18,23 +17,63 @@
   <!-- Barra de búsqueda -->
   <ion-searchbar (ionChange)="buscarReuniones($event)" placeholder="Buscar reuniones"></ion-searchbar>
 
+  <div class="filter-chips">
+    <ion-chip (click)="setFiltro('todas')" [color]="filtroActual === 'todas' ? 'primary' : 'medium'">
+      <ion-label>Todas</ion-label>
+      <ion-badge slot="end">{{ contarReuniones('todas') }}</ion-badge>
+    </ion-chip>
+    <ion-chip (click)="setFiltro('coordinacion')" [color]="filtroActual === 'coordinacion' ? 'primary' : 'medium'">
+      <ion-label>Coordinación</ion-label>
+      <ion-badge slot="end">{{ contarReuniones('coordinacion') }}</ion-badge>
+    </ion-chip>
+    <ion-chip (click)="setFiltro('mias')" [color]="filtroActual === 'mias' ? 'primary' : 'medium'">
+      <ion-label>Mis Reuniones</ion-label>
+      <ion-badge slot="end">{{ contarReuniones('mias') }}</ion-badge>
+    </ion-chip>
+    <ion-chip (click)="setFiltro('activas')" [color]="filtroActual === 'activas' ? 'primary' : 'medium'">
+      <ion-label>Activas</ion-label>
+      <ion-badge slot="end">{{ contarReuniones('activas') }}</ion-badge>
+    </ion-chip>
+  </div>
+
   <div class="container mt-3">
     <div *ngFor="let reunion of reunionesFiltradas" class="card mb-3" (click)="verDetalles(reunion)">
       <div class="card-body">
+        <!-- Indicador de estado de la reunión -->
+        <div *ngIf="reunion.estado === 'Finalizada'" class="estado-indicador">
+          <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+          <span>Finalizada</span>
+        </div>
+
+        <!-- Motivo de la reunión -->
         <h5 class="card-title">{{ reunion.motivo }}</h5>
-        <p class="card-text">{{ reunion.comentarios }}</p>
-        <p class="card-text">{{ reunion.ubicacion }}</p>
-        <p class="card-text">Estado: {{ reunion.estado }}</p>
-        <p class="card-text" *ngIf="reunion.fechas_reunion.length">
-          Fechas:
+
+        <!-- Fechas de la reunión -->
+        <p class="card-text" *ngIf="reunion.estado === 'Planificación' || reunion.estado === 'Coordinación'">
+          Fechas tentativas:
           <span *ngFor="let fecha of reunion.fechas_reunion; let i = index">
             {{ fecha.fecha | date: 'fullDate' }}
             <span *ngIf="i < reunion.fechas_reunion.length - 1">, </span>
           </span>
         </p>
+        <p class="card-text" *ngIf="reunion.estado === 'Activa'">
+          Fecha de la reunión: {{ reunion.fechas_reunion[0]?.fecha | date: 'fullDate' }}
+        </p>
+
+        <!-- Comentarios y ubicación -->
+        <p class="card-text">{{ reunion.comentarios }}</p>
+        <p class="card-text">{{ reunion.ubicacion }}</p>
+
+        <!-- Participantes -->
         <div class="scrollable-content">
           <h6>Participantes:</h6>
           <div *ngFor="let participante of reunion.participantes">{{ participante.nombre }}</div>
+        </div>
+
+        <!-- Indicador de voto -->
+        <div *ngIf="esCoordinacion(reunion)" class="voto-indicador">
+          <ion-icon [name]="tieneFechasSeleccionadas(reunion) ? 'checkmark-circle-outline' : 'checkbox-outline'" slot="start"></ion-icon>
+          <span>{{ tieneFechasSeleccionadas(reunion) ? 'Ya votaste' : 'Puedes votar' }}</span>
         </div>
       </div>
     </div>

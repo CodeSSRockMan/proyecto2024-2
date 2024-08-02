@@ -15,13 +15,15 @@ export class EstadoReunionPage implements OnInit {
   confirmadosSinOpcion: Participante[] = [];
   sinConfirmar: Participante[] = [];
   fechasSeleccionadas: Date[] = [];
-  fechaSeleccionada: Date = new Date();
+  fechaSeleccionada: FechaReunion | null = null;
   reunion: Reunion | null = null;
   code: string = '';
-
+  fechitas: FechaReunion[] = [];
+  participantesPorFecha: { [key: number]: Participante[] } = {};
   mostrarTodas: boolean = true;
   participantes: Participante[] = [];
   estadosReunion: string[] = ['planificacion', 'coordinacion', 'activa', 'terminada'];
+  participantesQueVotaronCache: { [fechaId: number]: Participante[] } = {};
 
   constructor(
     private alertController: AlertController,
@@ -31,14 +33,50 @@ export class EstadoReunionPage implements OnInit {
     private reunionesService: ReunionesService
   ) {}
 
-  ngOnInit() {
-    // Recuperar la ID de la reunión desde el estado de navegación
+  onFechaSeleccionada(fecha: FechaReunion) {
+    this.fechaSeleccionada = fecha;
+  }
+
+  async ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state as { reunionId: number };
-
+  
     if (state?.reunionId) {
-      this.obtenerReunionDetalles(state.reunionId);
+      await this.obtenerReunionDetalles(state.reunionId);
+      await this.cargarFechitas(state.reunionId);
+      // Precalcular la longitud de los participantes que votaron
+      for (const fecha of this.fechitas) {
+
+        this.participantesQueVotaronCache[fecha.id] = await this.obtenerParticipantesQueVotaron(fecha.id);
+      }
     }
+  }
+
+  async obtenerParticipantesQueVotaron(fechaId: number): Promise<Participante[]> {
+    try {
+      const participantes = await this.reunionesService.obtenerParticipantesQueVotaron(fechaId);
+      console.log(participantes);
+      this.participantesPorFecha[fechaId] = participantes;
+      return participantes;
+    } catch (error) {
+      console.error('Error al obtener los participantes que votaron:', error);
+      return []; // Retorna una lista vacía en caso de error
+    }
+  }
+
+  participantesQueVotaron(fechaId: number): Participante[] {
+    return this.participantesQueVotaronCache[fechaId] || [];
+  }
+
+  async cargarParticipantesPorFechas() {
+    for (const fecha of this.fechitas) {
+      await this.participantesQueVotaron(fecha.id);
+    }
+  }
+   // Método para obtener la longitud de los participantes que votaron
+   async participantesQueVotaronLength(fechaId: number): Promise<number> {
+    const participantes = await this.participantesQueVotaron(fechaId);
+    return participantes.length;
   }
 
   getIconForPlatform(platform: string): string {
@@ -57,12 +95,26 @@ export class EstadoReunionPage implements OnInit {
     return icons[platform] || 'desktop-outline';
   }
 
+
+
+  getParticipantes(fechaId: number): Participante[] {
+    return this.participantesPorFecha[fechaId] || [];
+  }
+
+  async cargarFechitas(reunionId: number) {
+    try {
+      this.fechitas = await this.reunionesService.obtenerFechasTentativasPorIdReunion(reunionId);
+    } catch (error) {
+      console.error('Error al cargar las fechas tentativas:', error);
+    }
+  }
+
   async obtenerReunionDetalles(id: number) {
     try {
       this.reunion = await this.reunionesService.obtenerReunionPorId(id);
       if (this.reunion) {
         this.code = this.reunion.codigo_invitacion || '';
-        this.procesarReunion(this.reunion);
+        await this.procesarReunion(this.reunion); // Asegurar que se procese la reunión correctamente
       } else {
         console.error('No se encontró la reunión con el ID proporcionado.');
       }
@@ -113,46 +165,28 @@ export class EstadoReunionPage implements OnInit {
     toast.present();
   }
 
-// Método para formatear la fecha en la zona horaria local
-// Método para formatear la fecha en la zona horaria local
-// Método para formatear la fecha en la zona horaria local
-formatDate(dateString: string): string {
-  // Asegúrate de que dateString esté en formato ISO y en UTC
-  const date = new Date(dateString);
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    date.setHours(date.getHours() + 4);
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      timeZone: 'America/Santiago'
+    };
+    return date.toLocaleDateString('es-ES', options);
+  }
 
-  date.setHours(date.getHours() + 4);
-
-  // Opciones para mostrar la fecha en formato largo
-  const options: Intl.DateTimeFormatOptions = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric', 
-    timeZone: 'America/Santiago' // Ajusta la zona horaria según sea necesario
-  };
-
-  // Convertir a fecha local en la zona horaria deseada
-  return date.toLocaleDateString('es-ES', options);
-}
-
-// Método para formatear la hora en la zona horaria local
-formatTime(timeString: string): string {
-  // Asegúrate de que timeString esté en formato adecuado y en UTC
-  // Agregar fecha base para la hora
-  const date = new Date(`1970-01-01T${timeString}Z`);
-
-  date.setHours(date.getHours() + 3);
-
-  // Opciones para mostrar la hora en formato de 24 horas
-  const options: Intl.DateTimeFormatOptions = { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    timeZone: 'America/Santiago' // Ajusta la zona horaria según sea necesario
-  };
-
-  // Convertir a hora local en la zona horaria deseada
-  return date.toLocaleTimeString('es-ES', options);
-}
-
+  formatTime(timeString: string): string {
+    const date = new Date(`1970-01-01T${timeString}Z`);
+    date.setHours(date.getHours() + 3);
+    const options: Intl.DateTimeFormatOptions = { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      timeZone: 'America/Santiago'
+    };
+    return date.toLocaleTimeString('es-ES', options);
+  }
 
   confirmarDetalles() {
     if (!this.reunion) {
@@ -167,12 +201,10 @@ formatTime(timeString: string): string {
 
   isValidToConfirm(): boolean {
     if (!this.reunion) {
-      return false; // Si no hay reunión, no se puede confirmar
+      return false;
     }
-  
-    // Verifica que haya al menos dos participantes confirmados solo si la reunión no está en planificación
     const tieneSuficientesParticipantes = this.reunion.estado === 'planificacion'
-      ? true // En planificación, no es necesario verificar participantes confirmados
+      ? true
       : this.confirmadosConFechas.length >= 2;
     return tieneSuficientesParticipantes;
   }
@@ -208,37 +240,21 @@ formatTime(timeString: string): string {
     return this.reunion?.estado === 'terminada';
   }
 
-  procesarReunion(reunion: Reunion) {
+  async procesarReunion(reunion: Reunion) {
     if (!reunion || !reunion.participantes) {
       console.error('Reunión o participantes no definidos');
       return;
     }
 
-    // Actualizar totalParticipantes
     this.totalParticipantes = reunion.participantes.length;
 
-    // Procesar participantes confirmados con y sin fechas
-    this.confirmadosConFechas = reunion.participantes.filter(participante =>
-      participante.confirmado && participante.fechasSeleccionadas && participante.fechasSeleccionadas.length > 0
-    );
-
-    this.confirmadosSinOpcion = reunion.participantes.filter(participante =>
-      participante.confirmado && (!participante.fechasSeleccionadas || participante.fechasSeleccionadas.length === 0)
-    );
-
-    this.sinConfirmar = reunion.participantes.filter(participante => !participante.confirmado);
-
-    // Actualizar fechasSeleccionadas
-    this.fechasSeleccionadas = reunion.fechas_reunion.map(fecha => new Date(fecha.fecha));
-    console.log('Fechas seleccionadas:', this.fechasSeleccionadas);
-  }
-
-  participantesPorFecha(fecha: Date): Participante[] {
-    const participantes = this.confirmadosConFechas.filter(participante =>
-      participante.fechasSeleccionadas?.some(f => new Date(f.fecha).getTime() === fecha.getTime())
-    );
-    console.log(`Participantes para la fecha ${fecha}:`, participantes);
-    return participantes;
+    try {
+      this.fechitas = await this.reunionesService.obtenerFechasTentativasPorIdReunion(reunion.id);
+      this.fechasSeleccionadas = reunion.fechas_reunion.map(fecha => new Date(fecha.fecha));
+      console.log(this.fechasSeleccionadas);
+    } catch (error) {
+      console.error('Error processing meeting:', error);
+    }
   }
 
   seleccionarFechaDefinitiva() {
@@ -248,17 +264,14 @@ formatTime(timeString: string): string {
       this.actualizarEstadoReunion();
     }
   }
-  
+
   async actualizarEstadoReunion() {
-    if (this.reunion) {
-      try {
-        await this.reunionesService.actualizarEstadoReunion(this.reunion.id, this.reunion.estado);
-        this.showToast('Estado de la reunión actualizado a "activa"');
-        console.log('Estado de la reunión actualizado a:', this.reunion.estado);
-      } catch (error) {
-        console.error('Error al actualizar el estado de la reunión:', error);
-        this.showToast('Error al actualizar el estado de la reunión');
-      }
+    try {
+      await this.reunionesService.actualizarEstadoReunion(this.reunion?.id || 0, this.reunion?.estado || '');
+      this.showToast('Estado de la reunión actualizado');
+    } catch (error) {
+      console.error('Error al actualizar el estado de la reunión:', error);
+      this.showToast('Error al actualizar el estado de la reunión');
     }
   }
 }

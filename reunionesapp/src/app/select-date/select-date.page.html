@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
     <ion-title class="ion-text-center">Fechas tentativas</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -23,20 +26,19 @@
       <ion-card-content>
         <ion-item>
           <ion-label>
-            <h2>{{ formatDate(date.startDate) }}</h2>
-            <p>{{ date.startDate | date: 'HH:mm' }} - {{ date.endDate | date: 'HH:mm' }}</p>
+            <h2>{{ formatDate(date.fecha) }}</h2>
+            <p>{{ date.hora_inicio }} - {{ date.hora_fin }}</p>
           </ion-label>
-          <ion-checkbox slot="start" [checked]="date.selected" (ionChange)="toggleSelectedDate(date.startDate)"></ion-checkbox>
+          <ion-checkbox slot="start" [checked]="isSelectedDate(date)" (ionChange)="toggleSelectedDate(date)"></ion-checkbox>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
-      <!-- Opción para indicar que ninguna fecha es adecuada -->
-<!-- Opción para indicar que ninguna fecha es adecuada -->
-<ion-item>
-  <ion-label>No puedo asistir en ninguna de estas fechas</ion-label>
-  <ion-checkbox slot="start" [checked]="noneOfTheDatesWork" (ionChange)="toggleNoneOfTheDatesWork($event.detail.checked)"></ion-checkbox>
-</ion-item>
+    <!-- Opción para indicar que ninguna fecha es adecuada -->
+    <ion-item>
+      <ion-label>No puedo asistir en ninguna de estas fechas</ion-label>
+      <ion-checkbox slot="start" [checked]="noneOfTheDatesWork" (ionChange)="toggleNoneOfTheDatesWork($event.detail.checked)"></ion-checkbox>
+    </ion-item>
   </ion-list>
 
   <!-- Botón de enviar -->
@@ -46,6 +48,5 @@
   <ion-item *ngIf="showThankYouMessage" class="ion-text-center">
     ¡Gracias por tu selección de fechas!
   </ion-item>
-
 
 </ion-content>

@@ -26,9 +26,8 @@
       <ion-card-title>{{ reunion?.motivo }}</ion-card-title>
       <ion-card-subtitle>Motivo: {{ reunion?.comentarios }}</ion-card-subtitle>
       <ion-card-subtitle>Total de participantes: {{ totalParticipantes }}</ion-card-subtitle>
-      <ion-card-subtitle>Total confirmados: {{ confirmadosConFechas.length }}</ion-card-subtitle>
+      <ion-card-subtitle>Total confirmados: {{ confirmadosConFechas.length || 0 }}</ion-card-subtitle>
     </ion-card-header>
-    
   </ion-card>
 
   <ion-item>
@@ -57,46 +56,58 @@
   <!-- Contenido dinámico según el estado de la reunión -->
   <ng-container *ngIf="reunion?.estado === 'coordinacion'; else planificacionContent">
     <!-- Formulario para elegir fecha -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Seleccionar Fecha</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-radio-group [(ngModel)]="fechaSeleccionada">
-            <div *ngFor="let fecha of fechasSeleccionadas" class="date-radio-item">
-              <ion-item lines="none" class="date-item">
-                <ion-radio [value]="fecha" class="date-radio" [disabled]="participantesPorFecha(fecha).length === 0"></ion-radio>
-                <div class="date-content">
-                  <ion-label class="date-label">
-                    <ion-text color="primary">
-                      {{ formatDate(fecha.toString()) }}
-                    </ion-text>
-                  </ion-label>
-                  <div class="participant-info">
-                    <ion-text color="medium" class="participant-count">
-                      ({{ participantesPorFecha(fecha).length }} participantes)
-                    </ion-text>
-                  </div>
-                </div>
-              </ion-item>
+    <!-- Formulario para elegir fecha -->
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Seleccionar Fecha</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-radio-group [(ngModel)]="fechaSeleccionada">
+        <div *ngFor="let fecha of fechitas" class="date-radio-item">
+          <ion-item lines="none" class="date-item">
+            <ion-radio 
+  [value]="fecha" 
+  (ionChange)="onFechaSeleccionada(fecha)"
+  class="date-radio">
+</ion-radio>
+            <div class="date-content">
+              <ion-label class="date-label">
+                <ion-text color="primary">
+                  {{ formatDate(fecha.fecha) }}
+                </ion-text>
+              </ion-label>
+              <div class="participant-info">
+                <ion-text color="medium" class="participant-count">
+                  ({{ (participantesQueVotaronCache[fecha.id] || []).length }} participantes)
+                </ion-text>
+              </div>
             </div>
-          </ion-radio-group>
-        </ion-list>
-        <ion-button expand="block" (click)="seleccionarFechaDefinitiva()" [disabled]="participantesPorFecha(fechaSeleccionada).length === 0">Seleccionar Fecha Definitiva</ion-button>
-      </ion-card-content>
-    </ion-card>
+          </ion-item>
+        </div>
+      </ion-radio-group>
+    </ion-list>
+    <ion-button 
+      expand="block" 
+      (click)="seleccionarFechaDefinitiva()" 
+      [disabled]="!fechaSeleccionada || !(participantesQueVotaronCache[fechaSeleccionada.id] || []).length">
+      Seleccionar Fecha Definitiva
+    </ion-button>
+  </ion-card-content>
+</ion-card>
 
     <!-- Mostrar confirmados con fechas -->
-    <ion-card *ngFor="let fecha of fechasSeleccionadas">
+    <ion-card *ngIf="fechitas.length > 0">
       <ion-card-header>
-        <ion-card-subtitle>{{ fecha | date: 'fullDate' }}</ion-card-subtitle>
-        <ion-card-title>Participantes: {{ participantesPorFecha(fecha).length }}</ion-card-title>
+        <ion-card-subtitle>Confirmados con fechas</ion-card-subtitle>
+        <ion-card-title *ngIf="fechitas.length > 0">Fechas tentativas</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list>
-          <ion-item *ngFor="let participante of participantesPorFecha(fecha)">
-            <ion-label>{{ participante.nombre }}</ion-label>
+          <ion-item *ngFor="let fecha of fechitas">
+            <ion-label>
+              {{ formatDate(fecha.fecha) }} - {{ formatTime(fecha.hora_inicio) }} a {{ formatTime(fecha.hora_fin) }}
+            </ion-label>
           </ion-item>
         </ion-list>
       </ion-card-content>
@@ -131,37 +142,34 @@
     </ion-card>
   </ng-container>
 
-<!-- Contenido para la etapa de planificación -->
-<ng-template #planificacionContent>
-  <ion-card *ngIf="reunion?.estado === 'planificacion'">
-    <ion-card-header>
-      <ion-card-title>Detalles Preeliminares</ion-card-title>
-      <ion-card-subtitle>Fechas Tentativas</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let fecha of reunion?.fechas_reunion">
-          <ion-label>
-            {{ formatDate(fecha.fecha) }} - {{ formatTime(fecha.hora_inicio) }} a {{ formatTime(fecha.hora_fin) }}
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-button expand="block" [routerLink]="['/participantes']" [state]="{ reunionId: reunion?.id }">
-        Ver Participantes
-        <ion-badge slot="end">{{ totalParticipantes }}</ion-badge>
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-  <ion-button expand="block" (click)="confirmarDetalles()" [disabled]="!isValidToConfirm()">
-    Confirmar Detalles y Avanzar
-  </ion-button>
-</ng-template>
-
-
-
+  <!-- Contenido para la etapa de planificación -->
+  <ng-template #planificacionContent>
+    <ion-card *ngIf="reunion?.estado === 'planificacion'">
+      <ion-card-header>
+        <ion-card-title>Detalles Preeliminares</ion-card-title>
+        <ion-card-subtitle>Fechas Tentativas</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let fecha of reunion?.fechas_reunion">
+            <ion-label>
+              {{ formatDate(fecha.fecha) }} - {{ formatTime(fecha.hora_inicio) }} a {{ formatTime(fecha.hora_fin) }}
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" [routerLink]="['/participantes']" [state]="{ reunionId: reunion?.id }">
+          Ver Participantes
+          <ion-badge slot="end">{{ totalParticipantes }}</ion-badge>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    <ion-button expand="block" (click)="confirmarDetalles()" [disabled]="!isValidToConfirm()">
+      Confirmar Detalles y Avanzar
+    </ion-button>
+  </ng-template>
 
   <!-- Mensaje si no hay participantes -->
- <!-- <ion-item *ngIf="totalParticipantes === 0">
+  <ion-item *ngIf="totalParticipantes === 0">
     <ion-label>No hay participantes</ion-label>
   </ion-item>
-</ion-content>-->
+</ion-content>
